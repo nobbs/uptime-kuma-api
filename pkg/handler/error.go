@@ -24,15 +24,15 @@ func (e *Error) Event() string {
 }
 
 func (e *Error) Register(h HandlerRegistrator) error {
-	fn := func(ch *shadiaosocketio.Channel, data any) error {
-		slog.Warn("received error event", slog.Any("data", data))
-		return nil
-	}
-
-	return h.On(ErrorEvent, fn)
+	return h.On(ErrorEvent, e.Callback)
 }
 
 func (e *Error) Occured() bool {
 	// TODO: implement some kind of error handling here
 	return false
+}
+
+func (e *Error) Callback(ch *shadiaosocketio.Channel, data any) error {
+	slog.Warn("received error event", slog.Any("data", data))
+	return nil
 }

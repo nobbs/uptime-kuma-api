@@ -12,11 +12,16 @@ const (
 	AutoLoginEvent = "autoLogin"
 )
 
-type AutoLogin struct {
-	state *state.State
+type AutoLoginState interface {
+	AutoLogin() (bool, error)
+	SetAutoLogin(bool) error
 }
 
-func NewAutoLogin(state *state.State) *AutoLogin {
+type AutoLogin struct {
+	state AutoLoginState
+}
+
+func NewAutoLogin(state AutoLoginState) *AutoLogin {
 	return &AutoLogin{state: state}
 }
 
@@ -25,20 +30,20 @@ func (al *AutoLogin) Event() string {
 }
 
 func (al *AutoLogin) Register(h HandlerRegistrator) error {
-	fn := func(ch *shadiaosocketio.Channel) error {
-		slog.Debug("received auto login event")
-
-		if err := al.state.SetAutoLogin(true); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return h.On(AutoLoginEvent, fn)
+	return h.On(AutoLoginEvent, al.Callback)
 }
 
 func (al *AutoLogin) Occured() bool {
 	_, err := al.state.AutoLogin()
 	return !errors.Is(err, state.ErrNotSetYet)
+}
+
+func (al *AutoLogin) Callback(ch *shadiaosocketio.Channel) error {
+	slog.Debug("received auto login event")
+
+	if err := al.state.SetAutoLogin(true); err != nil {
+		return err
+	}
+
+	return nil
 }

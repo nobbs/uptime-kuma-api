@@ -12,13 +12,18 @@ const (
 	ConnectEvent = shadiaosocketio.OnConnection
 )
 
+type ConnectState interface {
+	Connected() (bool, error)
+	SetConnected(bool) error
+}
+
 // Connect is a handler for the connect event.
 type Connect struct {
-	state *state.State
+	state ConnectState
 }
 
 // NewConnect returns a new Connect handler.
-func NewConnect(state *state.State) *Connect {
+func NewConnect(state ConnectState) *Connect {
 	return &Connect{state: state}
 }
 
@@ -29,25 +34,26 @@ func (c *Connect) Event() string {
 
 // Register registers the handler.
 func (c *Connect) Register(h HandlerRegistrator) error {
-	fn := func(ch *shadiaosocketio.Channel) error {
-		slog.Debug("received connect event")
-
-		if ch == nil {
-			return errors.New("nil channel")
-		}
-
-		if err := c.state.SetConnected(true); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return h.On(ConnectEvent, fn)
+	return h.On(ConnectEvent, c.Callback)
 }
 
 // Occured returns true if the event has occured at least once.
 func (c *Connect) Occured() bool {
 	_, err := c.state.Connected()
 	return !errors.Is(err, state.ErrNotSetYet)
+}
+
+// Callback handles the event.
+func (c *Connect) Callback(ch *shadiaosocketio.Channel) error {
+	slog.Debug("received connect event")
+
+	if ch == nil {
+		return errors.New("nil channel")
+	}
+
+	if err := c.state.SetConnected(true); err != nil {
+		return err
+	}
+
+	return nil
 }
