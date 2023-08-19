@@ -72,7 +72,9 @@ func Login(c StatefulEmiter, username, password, token string) (string, error) {
 	}
 
 	// set logged in to true
-	c.State().SetLoggedIn(true)
+	if err := c.State().SetLoggedIn(true); err != nil {
+		return "", err
+	}
 
 	return *data.Token, nil
 }
@@ -106,7 +108,9 @@ func LoginByToken(c StatefulEmiter, token string) error {
 	}
 
 	// set logged in to true
-	c.State().SetLoggedIn(true)
+	if err := c.State().SetLoggedIn(true); err != nil {
+		return err
+	}
 
 	return nil
 }
