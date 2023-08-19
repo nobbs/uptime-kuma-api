@@ -1,0 +1,145 @@
+package handler_test
+
+import (
+	"testing"
+
+	"github.com/Baiguoshuai1/shadiaosocketio"
+	"github.com/nobbs/uptime-kuma-api/mocks"
+	"github.com/nobbs/uptime-kuma-api/pkg/handler"
+	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestAutoLogin_Event(t *testing.T) {
+	c := handler.NewAutoLogin(nil)
+
+	assert.Equal(t, handler.AutoLoginEvent, c.Event())
+}
+
+func TestAutoLogin_Register(t *testing.T) {
+	r := mocks.NewHandlerRegistrator(t)
+	c := handler.NewAutoLogin(nil)
+
+	r.EXPECT().On(handler.AutoLoginEvent, mock.MatchedBy(func(any) bool {
+		return true
+	})).Return(nil).Once()
+
+	assert.NoError(t, c.Register(r))
+}
+
+func TestAutoLogin_Occured(t *testing.T) {
+	s := mocks.NewAutoLoginState(t)
+	c := handler.NewAutoLogin(s)
+
+	s.EXPECT().AutoLogin().Return(false, state.ErrNotSetYet).Once()
+	s.EXPECT().AutoLogin().Return(true, nil).Once()
+
+	assert.False(t, c.Occured())
+	assert.True(t, c.Occured())
+}
+
+func TestAutoLogin_Callback(t *testing.T) {
+	type fields struct {
+		state *mocks.AutoLoginState
+	}
+	type args struct {
+		ch *shadiaosocketio.Channel
+	}
+	tests := []struct {
+		name   string
+		fields *fields
+		args   *args
+		want   error
+
+		on     func(*fields)
+		assert func(*testing.T, *fields)
+	}{
+		{
+			name: "ok",
+			fields: &fields{
+				state: mocks.NewAutoLoginState(t),
+			},
+			args: &args{
+				ch: new(shadiaosocketio.Channel),
+			},
+			want: nil,
+			on: func(f *fields) {
+				f.state.EXPECT().SetAutoLogin(true).Return(nil).Once()
+			},
+			assert: func(t *testing.T, f *fields) {
+				f.state.AssertExpectations(t)
+			},
+		},
+		{
+			name: "error",
+			fields: &fields{
+				state: mocks.NewAutoLoginState(t),
+			},
+			args: &args{
+				ch: new(shadiaosocketio.Channel),
+			},
+			want: state.ErrStateNil,
+			on: func(f *fields) {
+				f.state.EXPECT().SetAutoLogin(true).Return(state.ErrStateNil).Once()
+			},
+			assert: func(t *testing.T, f *fields) {
+				f.state.AssertExpectations(t)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// setup mocks
+			c := handler.NewAutoLogin(tt.fields.state)
+
+			if tt.on != nil {
+				tt.on(tt.fields)
+			}
+
+			// run function
+			got := c.Callback(tt.args.ch)
+
+			// assert results
+			assert.Equal(t, tt.want, got)
+
+			if tt.assert != nil {
+				tt.assert(t, tt.fields)
+			}
+		})
+	}
+}
+
+// func TestAutoLogin_Register(t *testing.T) {
+// 	type fields struct {
+// 		state *state.State
+// 	}
+// 	type args struct {
+// 		h HandlerRegistrator
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		fields  fields
+// 		args    args
+// 		wantErr bool
+// 	}{
+// 		{
+// 			name:   "ok",
+// 			fields: fields{state: state.NewState()},
+// 			args: args{h: &mockAutoLoginHandler{
+// 				Channel: &shadiaosocketio.Channel{},
+// 			}},
+// 			wantErr: false,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			al := &AutoLogin{
+// 				state: tt.fields.state,
+// 			}
+// 			if err := al.Register(tt.args.h); (err != nil) != tt.wantErr {
+// 				t.Errorf("AutoLogin.Register() error = %v, wantErr %v", err, tt.wantErr)
+// 			}
+// 		})
+// 	}
+// }

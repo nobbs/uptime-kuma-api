@@ -24,15 +24,15 @@ func (m *Message) Event() string {
 }
 
 func (m *Message) Register(h HandlerRegistrator) error {
-	fn := func(ch *shadiaosocketio.Channel, data any) error {
-		slog.Info("received message event", slog.Any("data", data))
-		return nil
-	}
-
-	return h.On(MessageEvent, fn)
+	return h.On(MessageEvent, m.Callback)
 }
 
 func (m *Message) Occured() bool {
 	// TODO: implement some kind of message handling here
 	return false
+}
+
+func (m *Message) Callback(ch *shadiaosocketio.Channel, data any) error {
+	slog.Info("received message event", slog.Any("data", data))
+	return nil
 }
