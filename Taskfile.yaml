@@ -28,12 +28,12 @@ tasks:
   test:
     desc: Run test suite
     cmds:
-      - go test ./...
+      - go test ./... {{.CLI_ARGS}}
 
   test:integration:
     desc: Run integration tests
     cmds:
-      - go test -tags=integration ./integration/...
+      - go test -tags=integration ./integration/... {{.CLI_ARGS}}
 
   test:all:
     desc: Run all tests
