@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# Taskfile check cache directory
+.task
+
+# vscode settings
+.vscode/settings.json

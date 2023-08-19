@@ -1,0 +1,42 @@
+version: "3"
+
+env:
+  CGO_ENABLED: "0"
+
+tasks:
+  default:
+    cmds:
+      - task: lint
+      - task: test
+
+  lint:
+    desc: Lint the code with golangci-lint
+    sources:
+      - "**/*.go"
+      - .golangci.yml
+    cmds:
+      - golangci-lint run
+
+  lint:fix:
+    desc: Fix linting errors
+    sources:
+      - "**/*.go"
+      - .golangci.yml
+    cmds:
+      - golangci-lint run --fix
+
+  test:
+    desc: Run test suite
+    cmds:
+      - go test ./...
+
+  test:integration:
+    desc: Run integration tests
+    cmds:
+      - go test -tags=integration ./integration/...
+
+  test:all:
+    desc: Run all tests
+    cmds:
+      - task: test
+      - task: test:integration
