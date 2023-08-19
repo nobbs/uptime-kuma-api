@@ -1,5 +1,10 @@
 version: "3"
 
+env:
+  # we need to set CGO_ENABLED=1 on non-darwin platforms to use -race flag
+  CGO_ENABLED:
+    sh: echo "{{ if eq OS "darwin" }}0{{ else }}1{{ end }}"
+
 tasks:
   default:
     cmds:
