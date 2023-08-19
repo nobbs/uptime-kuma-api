@@ -28,3 +28,6 @@ go.work
 
 # direnv
 .envrc
+
+# local binaries
+bin/
