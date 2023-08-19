@@ -1,3 +1,4 @@
+# docs: <https://golangci-lint.run/usage/configuration/>
 run:
   skip-dirs:
     - ".*/.asdf/.*"
