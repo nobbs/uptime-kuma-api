@@ -1,0 +1,18 @@
+run:
+  skip-dirs:
+    - ".*/.asdf/.*"
+
+  build-tags:
+    - integration
+
+linters:
+  enable:
+    - goimports
+    - gofmt
+    - gofumpt
+
+linters-settings:
+  gofmt:
+    rewrite-rules:
+      - pattern: 'interface{}'
+        replacement: 'any'
