@@ -23,7 +23,9 @@ func Logout(c StatefulEmiter) error {
 	}
 
 	// set logged in to false
-	c.State().SetLoggedIn(false)
+	if err := c.State().SetLoggedIn(false); err != nil {
+		return fmt.Errorf("set logged in: %w", err)
+	}
 
 	return nil
 }

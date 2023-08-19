@@ -36,7 +36,10 @@ func (c *Connect) Register(h HandlerRegistrator) error {
 			return errors.New("nil channel")
 		}
 
-		c.state.SetConnected(true)
+		if err := c.state.SetConnected(true); err != nil {
+			return err
+		}
+
 		return nil
 	}
 

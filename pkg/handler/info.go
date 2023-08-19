@@ -39,7 +39,9 @@ func (i *Info) Register(h HandlerRegistrator) error {
 		}
 
 		// set info
-		i.state.SetInfo(info)
+		if err := i.state.SetInfo(info); err != nil {
+			return err
+		}
 
 		return nil
 	}

@@ -32,7 +32,10 @@ func (d *Disconnect) Register(h HandlerRegistrator) error {
 			return nil
 		}
 
-		d.state.SetConnected(false)
+		if err := d.state.SetConnected(false); err != nil {
+			return err
+		}
+
 		return nil
 	}
 
