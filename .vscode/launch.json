@@ -12,6 +12,7 @@
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/main.go",
             "env": {},
+            "envFile": "${workspaceFolder}/.env",
             "args": []
         },
         {
@@ -20,6 +21,7 @@
             "request": "launch",
             "mode": "test",
             "program": "${workspaceFolder}/integration",
+            "envFile": "${workspaceFolder}/.env",
             "buildFlags": "-tags=integration",
             "args": []
           }
