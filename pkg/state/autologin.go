@@ -1,6 +1,8 @@
 package state
 
-import "github.com/nobbs/uptime-kuma-api/pkg/utils"
+import (
+	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+)
 
 // AutoLogin returns the auto login state of the client.
 func (s *State) AutoLogin() (bool, error) {

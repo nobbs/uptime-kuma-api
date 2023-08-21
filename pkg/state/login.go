@@ -1,6 +1,8 @@
 package state
 
-import "github.com/nobbs/uptime-kuma-api/pkg/utils"
+import (
+	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+)
 
 // LoggedIn returns the login state of the client.
 func (s *State) LoggedIn() (bool, error) {

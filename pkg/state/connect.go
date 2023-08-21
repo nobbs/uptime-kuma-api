@@ -1,6 +1,8 @@
 package state
 
-import "github.com/nobbs/uptime-kuma-api/pkg/utils"
+import (
+	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+)
 
 // Connected returns the connection state of the client.
 func (s *State) Connected() (bool, error) {
