@@ -58,8 +58,8 @@ func (_c *AutoLoginState_AutoLogin_Call) Run(run func()) *AutoLoginState_AutoLog
 	return _c
 }
 
-func (_c *AutoLoginState_AutoLogin_Call) Return(_a0 bool, _a1 error) *AutoLoginState_AutoLogin_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *AutoLoginState_AutoLogin_Call) Return(autoLogin bool, err error) *AutoLoginState_AutoLogin_Call {
+	_c.Call.Return(autoLogin, err)
 	return _c
 }
 
@@ -68,13 +68,88 @@ func (_c *AutoLoginState_AutoLogin_Call) RunAndReturn(run func() (bool, error)) 
 	return _c
 }
 
-// SetAutoLogin provides a mock function with given fields: _a0
-func (_m *AutoLoginState) SetAutoLogin(_a0 bool) error {
-	ret := _m.Called(_a0)
+// HasSeen provides a mock function with given fields: event
+func (_m *AutoLoginState) HasSeen(event string) bool {
+	ret := _m.Called(event)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(string) bool); ok {
+		r0 = rf(event)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// AutoLoginState_HasSeen_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HasSeen'
+type AutoLoginState_HasSeen_Call struct {
+	*mock.Call
+}
+
+// HasSeen is a helper method to define mock.On call
+//   - event string
+func (_e *AutoLoginState_Expecter) HasSeen(event interface{}) *AutoLoginState_HasSeen_Call {
+	return &AutoLoginState_HasSeen_Call{Call: _e.mock.On("HasSeen", event)}
+}
+
+func (_c *AutoLoginState_HasSeen_Call) Run(run func(event string)) *AutoLoginState_HasSeen_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *AutoLoginState_HasSeen_Call) Return(seen bool) *AutoLoginState_HasSeen_Call {
+	_c.Call.Return(seen)
+	return _c
+}
+
+func (_c *AutoLoginState_HasSeen_Call) RunAndReturn(run func(string) bool) *AutoLoginState_HasSeen_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MarkSeen provides a mock function with given fields: event
+func (_m *AutoLoginState) MarkSeen(event string) {
+	_m.Called(event)
+}
+
+// AutoLoginState_MarkSeen_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkSeen'
+type AutoLoginState_MarkSeen_Call struct {
+	*mock.Call
+}
+
+// MarkSeen is a helper method to define mock.On call
+//   - event string
+func (_e *AutoLoginState_Expecter) MarkSeen(event interface{}) *AutoLoginState_MarkSeen_Call {
+	return &AutoLoginState_MarkSeen_Call{Call: _e.mock.On("MarkSeen", event)}
+}
+
+func (_c *AutoLoginState_MarkSeen_Call) Run(run func(event string)) *AutoLoginState_MarkSeen_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *AutoLoginState_MarkSeen_Call) Return() *AutoLoginState_MarkSeen_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *AutoLoginState_MarkSeen_Call) RunAndReturn(run func(string)) *AutoLoginState_MarkSeen_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetAutoLogin provides a mock function with given fields: autoLogin
+func (_m *AutoLoginState) SetAutoLogin(autoLogin bool) error {
+	ret := _m.Called(autoLogin)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(bool) error); ok {
-		r0 = rf(_a0)
+		r0 = rf(autoLogin)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -88,20 +163,20 @@ type AutoLoginState_SetAutoLogin_Call struct {
 }
 
 // SetAutoLogin is a helper method to define mock.On call
-//   - _a0 bool
-func (_e *AutoLoginState_Expecter) SetAutoLogin(_a0 interface{}) *AutoLoginState_SetAutoLogin_Call {
-	return &AutoLoginState_SetAutoLogin_Call{Call: _e.mock.On("SetAutoLogin", _a0)}
+//   - autoLogin bool
+func (_e *AutoLoginState_Expecter) SetAutoLogin(autoLogin interface{}) *AutoLoginState_SetAutoLogin_Call {
+	return &AutoLoginState_SetAutoLogin_Call{Call: _e.mock.On("SetAutoLogin", autoLogin)}
 }
 
-func (_c *AutoLoginState_SetAutoLogin_Call) Run(run func(_a0 bool)) *AutoLoginState_SetAutoLogin_Call {
+func (_c *AutoLoginState_SetAutoLogin_Call) Run(run func(autoLogin bool)) *AutoLoginState_SetAutoLogin_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(bool))
 	})
 	return _c
 }
 
-func (_c *AutoLoginState_SetAutoLogin_Call) Return(_a0 error) *AutoLoginState_SetAutoLogin_Call {
-	_c.Call.Return(_a0)
+func (_c *AutoLoginState_SetAutoLogin_Call) Return(err error) *AutoLoginState_SetAutoLogin_Call {
+	_c.Call.Return(err)
 	return _c
 }
 

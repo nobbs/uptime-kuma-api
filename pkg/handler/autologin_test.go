@@ -32,8 +32,8 @@ func TestAutoLogin_Occured(t *testing.T) {
 	s := mocks.NewAutoLoginState(t)
 	c := handler.NewAutoLogin(s)
 
-	s.EXPECT().AutoLogin().Return(false, state.ErrNotSetYet).Once()
-	s.EXPECT().AutoLogin().Return(true, nil).Once()
+	s.EXPECT().HasSeen(handler.AutoLoginEvent).Return(false).Once()
+	s.EXPECT().HasSeen(handler.AutoLoginEvent).Return(true).Once()
 
 	assert.False(t, c.Occured())
 	assert.True(t, c.Occured())
@@ -65,6 +65,7 @@ func TestAutoLogin_Callback(t *testing.T) {
 			},
 			want: nil,
 			on: func(f *fields) {
+				f.state.EXPECT().MarkSeen(handler.AutoLoginEvent).Return()
 				f.state.EXPECT().SetAutoLogin(true).Return(nil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
@@ -81,6 +82,7 @@ func TestAutoLogin_Callback(t *testing.T) {
 			},
 			want: state.ErrStateNil,
 			on: func(f *fields) {
+				f.state.EXPECT().MarkSeen(handler.AutoLoginEvent).Return()
 				f.state.EXPECT().SetAutoLogin(true).Return(state.ErrStateNil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
@@ -109,37 +111,3 @@ func TestAutoLogin_Callback(t *testing.T) {
 		})
 	}
 }
-
-// func TestAutoLogin_Register(t *testing.T) {
-// 	type fields struct {
-// 		state *state.State
-// 	}
-// 	type args struct {
-// 		h HandlerRegistrator
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		fields  fields
-// 		args    args
-// 		wantErr bool
-// 	}{
-// 		{
-// 			name:   "ok",
-// 			fields: fields{state: state.NewState()},
-// 			args: args{h: &mockAutoLoginHandler{
-// 				Channel: &shadiaosocketio.Channel{},
-// 			}},
-// 			wantErr: false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			al := &AutoLogin{
-// 				state: tt.fields.state,
-// 			}
-// 			if err := al.Register(tt.args.h); (err != nil) != tt.wantErr {
-// 				t.Errorf("AutoLogin.Register() error = %v, wantErr %v", err, tt.wantErr)
-// 			}
-// 		})
-// 	}
-// }

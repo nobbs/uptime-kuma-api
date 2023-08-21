@@ -63,3 +63,9 @@ tasks:
       - mockery:install
     cmds:
       - "{{.BIN}}/mockery"
+
+  husky:pre-commit:
+    cmds:
+      - task: mockery:generate
+      - task: lint
+      - task: test

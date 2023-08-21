@@ -34,16 +34,16 @@ func DecodeMap[V any](data map[string]any, response map[int]V) error {
 
 // DecodeSlice is a wrapper around mapstructure.WeakDecode for multiple
 // values passed as a []interface{} - response must be a pointer to a slices
-func DecodeSlice[V any](data []any, response *[]V) error {
+func DecodeSlice[V any](data []any, response []V) ([]V, error) {
 	for _, v := range data {
-		var d V
+		d := new(V)
 		err := Decode(v, &d)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		*response = append(*response, d)
+		response = append(response, *d)
 	}
 
-	return nil
+	return response, nil
 }

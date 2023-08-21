@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"errors"
 	"log/slog"
 
 	"github.com/Baiguoshuai1/shadiaosocketio"
-	"github.com/nobbs/uptime-kuma-api/pkg/state"
 )
 
 const (
@@ -13,33 +11,41 @@ const (
 )
 
 type AutoLoginState interface {
-	AutoLogin() (bool, error)
-	SetAutoLogin(bool) error
+	AutoLogin() (autoLogin bool, err error)
+	SetAutoLogin(autoLogin bool) (err error)
+	HasSeen(event string) (seen bool)
+	MarkSeen(event string)
 }
 
 type AutoLogin struct {
 	state AutoLoginState
 }
 
+// NewAutoLogin creates a new AutoLogin handler.
 func NewAutoLogin(state AutoLoginState) *AutoLogin {
 	return &AutoLogin{state: state}
 }
 
+// Event returns the event name.
 func (al *AutoLogin) Event() string {
 	return AutoLoginEvent
 }
 
+// Register registers the handler with the client.
 func (al *AutoLogin) Register(h HandlerRegistrator) error {
 	return h.On(AutoLoginEvent, al.Callback)
 }
 
+// Occured returns true if the event has occured, false otherwise. Required in some places to
+// make sure a specific event has been sent before continuing.
 func (al *AutoLogin) Occured() bool {
-	_, err := al.state.AutoLogin()
-	return !errors.Is(err, state.ErrNotSetYet)
+	return al.state.HasSeen(AutoLoginEvent)
 }
 
+// Callback is the function that is called when the event is received.
 func (al *AutoLogin) Callback(ch *shadiaosocketio.Channel) error {
-	slog.Debug("received auto login event")
+	slog.Info("AutoLogin callback")
+	al.state.MarkSeen(AutoLoginEvent)
 
 	if err := al.state.SetAutoLogin(true); err != nil {
 		return err

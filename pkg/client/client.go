@@ -77,11 +77,14 @@ func NewClientWithConnection(socketio Connection) (c *Client, err error) {
 
 	// initialize handlers
 	knownHandlers := map[string]EventHandler{
-		handler.ConnectEvent:    handler.NewConnect(s),
-		handler.DisconnectEvent: handler.NewDisconnect(s),
-		handler.MessageEvent:    handler.NewMessage(s),
-		handler.ErrorEvent:      handler.NewError(s),
-		handler.InfoEvent:       handler.NewInfo(s),
+		handler.ConnectEvent:                handler.NewConnect(s),
+		handler.DisconnectEvent:             handler.NewDisconnect(s),
+		handler.MessageEvent:                handler.NewMessage(s),
+		handler.ErrorEvent:                  handler.NewError(s),
+		handler.InfoEvent:                   handler.NewInfo(s),
+		handler.HeartbeatListEvent:          handler.NewHeartbeatList(s),
+		handler.ImportantHeartbeatListEvent: handler.NewImportantHeartbeatList(s),
+		handler.HeartbeatEvent:              handler.NewHeartbeat(s),
 	}
 
 	// create new client instance

@@ -7,9 +7,6 @@ type Info struct {
 	ServerTimezone       *string `mapstructure:"serverTimezone"`
 	ServerTimezoneOffset *string `mapstructure:"serverTimezoneOffset"`
 	Version              *string `mapstructure:"version"`
-
-	// additional fields that may be present but are not documented
-	Unmapped map[string]any `mapstructure:",remain"`
 }
 
 // Info return the info data received from Uptime Kuma.

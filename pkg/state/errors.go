@@ -15,12 +15,13 @@ var (
 	ErrNotSetYet = errors.New("value not set yet")
 )
 
-// ErrNotFound is returned when a resource for a given ID is not found.
+// ErrNotFound is returned when a resource for a given ID is not found in the current state cache.
 type ErrNotFound struct {
 	Kind string
 	Id   int
 }
 
+// NewErrNotFound returns a new ErrNotFound.
 func NewErrNotFound(kind string, id int) *ErrNotFound {
 	return &ErrNotFound{
 		Kind: kind,
@@ -28,6 +29,7 @@ func NewErrNotFound(kind string, id int) *ErrNotFound {
 	}
 }
 
+// Error returns the error message.
 func (e *ErrNotFound) Error() string {
 	return fmt.Sprintf("%s with id %d not found", e.Kind, e.Id)
 }
