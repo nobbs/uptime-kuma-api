@@ -46,6 +46,11 @@ tasks:
       - task: test
       - task: test:integration
 
+  mod:download:
+    desc: Download dependencies
+    cmds:
+      - go mod download
+
   mockery:install:
     desc: Install mockery
     vars:
