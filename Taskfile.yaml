@@ -63,6 +63,10 @@ tasks:
       - mockery:install
     cmds:
       - "{{.BIN}}/mockery"
+    sources:
+      - pkg/**/*.go
+    generates:
+      - mocks/**/*.go
 
   husky:pre-commit:
     cmds:
