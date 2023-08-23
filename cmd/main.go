@@ -89,18 +89,17 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if config.Username != "" && config.Password != "" {
+	switch {
+	case config.Username != "" && config.Password != "":
 		// login with username and password
-		_, err = action.Login(c, config.Username, config.Password, config.Token)
-		if err != nil {
+		if _, err = action.Login(c, config.Username, config.Password, config.Token); err != nil {
 			log.Fatalln(err)
 		}
-	} else if config.JWT != "" {
-		err = action.LoginByToken(c, config.JWT)
-		if err != nil {
+	case config.JWT != "":
+		if err = action.LoginByToken(c, config.JWT); err != nil {
 			log.Fatalln(err)
 		}
-	} else {
+	default:
 		log.Fatalln("no login credentials provided")
 	}
 

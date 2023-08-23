@@ -1,6 +1,6 @@
 //go:build integration
 
-package integration
+package integration_test
 
 import (
 	"fmt"
@@ -81,7 +81,7 @@ func setupUptimeKumaServer() error {
 }
 
 // setupUptimeKumaContainer sets up a new Uptime Kuma container and returns the docker pool, the
-// container resource and an error if any occured.‚
+// container resource and an error if any occurred.‚
 func setupUptimeKumaContainer() (*dockertest.Pool, *dockertest.Resource, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -112,6 +112,7 @@ func setupUptimeKumaContainer() (*dockertest.Pool, *dockertest.Resource, error) 
 // tests.
 func readinessProbe() error {
 	requestURL := fmt.Sprintf("http://%s:%d", uptimeKumaHost, uptimeKumaPortExternal)
+
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
 		return err
@@ -139,8 +140,7 @@ func TestMain(m *testing.M) {
 
 	// set imposter port
 	uptimeKumaPortExternalStr := resource.GetPort("3001/tcp")
-	uptimeKumaPortExternal, err = strconv.Atoi(uptimeKumaPortExternalStr)
-	if err != nil {
+	if uptimeKumaPortExternal, err = strconv.Atoi(uptimeKumaPortExternalStr); err != nil {
 		log.Fatalf("Could not convert imposter port to int: %s", err)
 	}
 
