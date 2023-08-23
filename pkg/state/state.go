@@ -31,6 +31,9 @@ type State struct {
 
 	// Stores the important heartbeats.
 	importantHeartbeats map[int]HeartbeatQueue
+
+	// Stores the tags
+	tags map[int]*Tag
 }
 
 // NewState creates a new empty state instance.
@@ -43,6 +46,7 @@ func NewState() *State {
 		info:                nil,
 		heartbeats:          nil,
 		importantHeartbeats: nil,
+		tags:                nil,
 	}
 }
 
