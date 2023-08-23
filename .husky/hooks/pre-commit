@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# check if task is installed, if not exit with a warning and code 0
+if ! command -v task &> /dev/null
+then
+    echo "pre-commit: task could not be found, please install it"
+    exit 0
+fi
+
+task husky:pre-commit
