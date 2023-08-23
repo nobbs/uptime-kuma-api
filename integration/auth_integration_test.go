@@ -8,6 +8,7 @@ import (
 
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
+	"github.com/nobbs/uptime-kuma-api/pkg/utils"
 )
 
 func TestLogin(t *testing.T) {
@@ -100,6 +101,47 @@ func TestAutoLogin(t *testing.T) {
 		// wait for auto login event to not happen
 		if err := c.Await(handler.AutoLoginEvent, awaitTimeout); err == nil {
 			t.Fatalf("Auto login event should not happen")
+		}
+	})
+
+	t.Run("Auto login enabled", func(t *testing.T) {
+		// create new client and wait for connection
+		c, err := newConnectedClient()
+		if err != nil {
+			t.Fatalf("Failed to create new client: %s", err)
+		}
+
+		// login
+		if _, err := action.Login(c, username, password, ""); err != nil {
+			t.Fatalf("Failed to login: %s", err)
+		}
+
+		// enable auto login by setting disableAuth to true
+		if err := action.SetSettings(c, &action.Settings{
+			DisableAuth: utils.NewBool(true),
+		}, password); err != nil {
+			t.Fatalf("Failed to set settings: %s", err)
+		}
+		// close client
+		c.Close()
+
+		// create new client and wait for connection
+		c, err = newConnectedClient()
+		if err != nil {
+			t.Fatalf("Failed to create new client: %s", err)
+		}
+		defer c.Close()
+
+		// wait for auto login event to happen
+		if err := c.Await(handler.AutoLoginEvent, awaitTimeout); err != nil {
+			t.Fatalf("Auto login event should happen")
+		}
+
+		// enable auth again
+		if err := action.SetSettings(c, &action.Settings{
+			DisableAuth: utils.NewBool(false),
+		}, password); err != nil {
+			t.Fatalf("Failed to set settings: %s", err)
 		}
 	})
 }
