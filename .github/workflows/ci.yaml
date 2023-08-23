@@ -84,7 +84,7 @@ jobs:
         run: task mod:download
 
       - name: Test with Docker
-        run: task test:integration -- -race -covermode=atomic -coverprofile coverage.out
+        run: task test:integration -- -race -covermode=atomic -coverprofile coverage.out -coverpkg ./...
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3

@@ -77,14 +77,15 @@ func NewClientWithConnection(socketio Connection) (c *Client, err error) {
 
 	// initialize handlers
 	knownHandlers := map[string]EventHandler{
+		handler.AutoLoginEvent:              handler.NewAutoLogin(s),
 		handler.ConnectEvent:                handler.NewConnect(s),
 		handler.DisconnectEvent:             handler.NewDisconnect(s),
-		handler.MessageEvent:                handler.NewMessage(s),
 		handler.ErrorEvent:                  handler.NewError(s),
-		handler.InfoEvent:                   handler.NewInfo(s),
+		handler.HeartbeatEvent:              handler.NewHeartbeat(s),
 		handler.HeartbeatListEvent:          handler.NewHeartbeatList(s),
 		handler.ImportantHeartbeatListEvent: handler.NewImportantHeartbeatList(s),
-		handler.HeartbeatEvent:              handler.NewHeartbeat(s),
+		handler.InfoEvent:                   handler.NewInfo(s),
+		handler.MessageEvent:                handler.NewMessage(s),
 	}
 
 	// create new client instance
@@ -128,8 +129,6 @@ func (c *Client) Close() {
 func (c *Client) Await(event string, timeout time.Duration) error {
 	// Create a context with the specified timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-
-	// Ensure to cancel the context to release resources.
 	defer cancel()
 
 	// Create a channel to receive a signal that work is done.
@@ -142,6 +141,7 @@ func (c *Client) Await(event string, timeout time.Duration) error {
 				eventChannel <- ok
 				return
 			}
+
 			time.Sleep(defaultAwaitSleep)
 		}
 	}()
