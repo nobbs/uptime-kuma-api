@@ -27,7 +27,7 @@ func (e *Error) Register(h HandlerRegistrator) error {
 	return h.On(ErrorEvent, e.Callback)
 }
 
-func (e *Error) Occured() bool {
+func (e *Error) Occurred() bool {
 	// TODO: implement some kind of error handling here
 	return false
 }

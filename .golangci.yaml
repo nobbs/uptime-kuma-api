@@ -8,9 +8,13 @@ run:
 
 linters:
   enable:
-    - goimports
+    - gocritic
     - gofmt
     - gofumpt
+    - goimports
+    - gosec
+    - misspell
+    - wsl
 
 linters-settings:
   gofmt:

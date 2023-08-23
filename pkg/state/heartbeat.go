@@ -105,8 +105,8 @@ func (s *State) SetHeartbeats(monitorId int, beats []Heartbeat, overwrite bool) 
 	}
 
 	// add heartbeats to monitor id
-	for _, beat := range beats {
-		s.heartbeats[monitorId].Push(&beat)
+	for i := range beats {
+		s.heartbeats[monitorId].Push(&beats[i])
 	}
 
 	// trim queue to capacity
@@ -146,8 +146,8 @@ func (s *State) SetImportantHeartbeats(monitorId int, beats []Heartbeat, overwri
 	}
 
 	// add heartbeats to monitor id
-	for _, beat := range beats {
-		s.importantHeartbeats[monitorId].Push(&beat)
+	for i := range beats {
+		s.importantHeartbeats[monitorId].Push(&beats[i])
 	}
 
 	// trim queue to capacity
@@ -190,5 +190,6 @@ func (s *State) AppendHeartbeat(beat *Heartbeat) error {
 		s.heartbeats[beat.MonitorId].Push(beat)
 		s.heartbeats[beat.MonitorId].Trim(capacityHeartbeats)
 	}
+
 	return nil
 }

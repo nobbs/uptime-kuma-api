@@ -50,9 +50,9 @@ type EventHandler interface {
 	// Register registers the handler with the connection.
 	Register(handler.HandlerRegistrator) error
 
-	// Occured returns true if the event has occured, false otherwise. Required in some places to
+	// Occurred returns true if the event has occurred, false otherwise. Required in some places to
 	// make sure a specific event has been sent before continuing.
-	Occured() bool
+	Occurred() bool
 }
 
 // NewClient creates a new client instance and connects to the server. Returns an error if the
@@ -60,6 +60,7 @@ type EventHandler interface {
 func NewClient(host string, port int, secure bool) (c *Client, err error) {
 	// create new socket.io client - this will connect to the server automatically
 	var socketio *shadiaosocketio.Client
+
 	if socketio, err = shadiaosocketio.Dial(
 		shadiaosocketio.GetUrl(host, port, secure),
 		*websocket.GetDefaultWebsocketTransport(),
@@ -137,7 +138,7 @@ func (c *Client) Await(event string, timeout time.Duration) error {
 	// Start a goroutine to perform the check asynchronously.
 	go func() {
 		for {
-			if ok := c.knownHandlers[event].Occured(); ok {
+			if ok := c.knownHandlers[event].Occurred(); ok {
 				eventChannel <- ok
 				return
 			}

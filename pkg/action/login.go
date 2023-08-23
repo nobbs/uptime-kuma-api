@@ -49,6 +49,7 @@ func Login(c StatefulEmiter, username, password, token string) (string, error) {
 		Password: password,
 		Token:    token,
 	}
+
 	response, err := c.Emit(loginAction, defaultEmitTimeout, request)
 	if err != nil {
 		return "", NewErrActionFailed(loginAction, err.Error())
@@ -56,8 +57,7 @@ func Login(c StatefulEmiter, username, password, token string) (string, error) {
 
 	// unmarshal data
 	data := &loginResponse{}
-	err = decode(response, data)
-	if err != nil {
+	if err := decode(response, data); err != nil {
 		return "", NewErrActionFailed(loginAction, err.Error())
 	}
 
@@ -97,8 +97,7 @@ func LoginByToken(c StatefulEmiter, token string) error {
 
 	// decode response into struct
 	data := &loginResponse{}
-	err = decode(response, data)
-	if err != nil {
+	if err := decode(response, data); err != nil {
 		return NewErrActionFailed(loginByTokenAction, err.Error())
 	}
 

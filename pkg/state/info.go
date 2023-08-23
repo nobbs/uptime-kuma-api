@@ -35,5 +35,6 @@ func (s *State) SetInfo(info *Info) error {
 	defer s.mu.Unlock()
 
 	s.info = info
+
 	return nil
 }

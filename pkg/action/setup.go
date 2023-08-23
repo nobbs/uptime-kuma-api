@@ -50,8 +50,7 @@ func Setup(c StatefulEmiter, username, password string) error {
 
 	// unmarshal raw response data
 	data := &setupResponse{}
-	err = decode(response, data)
-	if err != nil {
+	if err := decode(response, data); err != nil {
 		return NewErrActionFailed(setupAction, err.Error())
 	}
 

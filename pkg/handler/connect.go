@@ -37,8 +37,8 @@ func (c *Connect) Register(h HandlerRegistrator) error {
 	return h.On(ConnectEvent, c.Callback)
 }
 
-// Occured returns true if the event has occured at least once.
-func (c *Connect) Occured() bool {
+// Occurred returns true if the event has occurred at least once.
+func (c *Connect) Occurred() bool {
 	_, err := c.state.Connected()
 	return !errors.Is(err, state.ErrNotSetYet)
 }

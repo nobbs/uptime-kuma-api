@@ -30,5 +30,6 @@ func (s *State) SetAutoLogin(autoLogin bool) error {
 	defer s.mu.Unlock()
 
 	s.autoLogin = utils.NewBool(autoLogin)
+
 	return nil
 }

@@ -36,9 +36,9 @@ func (al *AutoLogin) Register(h HandlerRegistrator) error {
 	return h.On(AutoLoginEvent, al.Callback)
 }
 
-// Occured returns true if the event has occured, false otherwise. Required in some places to
+// Occurred returns true if the event has occurred, false otherwise. Required in some places to
 // make sure a specific event has been sent before continuing.
-func (al *AutoLogin) Occured() bool {
+func (al *AutoLogin) Occurred() bool {
 	return al.state.HasSeen(AutoLoginEvent)
 }
 

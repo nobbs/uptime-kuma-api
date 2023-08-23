@@ -29,24 +29,26 @@ func TestConnect_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestConnect_Occured(t *testing.T) {
+func TestConnect_Occurred(t *testing.T) {
 	s := mocks.NewConnectState(t)
 	c := handler.NewConnect(s)
 
 	s.EXPECT().Connected().Return(false, state.ErrNotSetYet).Once()
 	s.EXPECT().Connected().Return(true, nil).Once()
 
-	assert.False(t, c.Occured())
-	assert.True(t, c.Occured())
+	assert.False(t, c.Occurred())
+	assert.True(t, c.Occurred())
 }
 
 func TestConnect_Callback(t *testing.T) {
 	type fields struct {
 		state *mocks.ConnectState
 	}
+
 	type args struct {
 		ch *shadiaosocketio.Channel
 	}
+
 	tests := []struct {
 		name   string
 		fields *fields
@@ -103,6 +105,7 @@ func TestConnect_Callback(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup mocks

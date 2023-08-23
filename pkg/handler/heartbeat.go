@@ -78,17 +78,17 @@ func (hn *ImportantHeartbeatList) Register(h HandlerRegistrator) error {
 	return h.On(ImportantHeartbeatListEvent, hn.Callback)
 }
 
-func (hn *Heartbeat) Occured() bool {
+func (hn *Heartbeat) Occurred() bool {
 	_, err := hn.state.Heartbeats(0)
 	return err == nil || !errors.Is(err, state.ErrNotSetYet)
 }
 
-func (hn *HeartbeatList) Occured() bool {
+func (hn *HeartbeatList) Occurred() bool {
 	_, err := hn.state.Heartbeats(0)
 	return err == nil || !errors.Is(err, state.ErrNotSetYet)
 }
 
-func (hn *ImportantHeartbeatList) Occured() bool {
+func (hn *ImportantHeartbeatList) Occurred() bool {
 	_, err := hn.state.ImportantHeartbeats(0)
 	return err == nil || !errors.Is(err, state.ErrNotSetYet)
 }
@@ -132,6 +132,7 @@ func (hn *HeartbeatList) Callback(h *shadiaosocketio.Channel, id any, result []a
 
 	// decode heartbeats into slice of heartbeats
 	heartbeats := make([]state.Heartbeat, 0, len(result))
+
 	heartbeats, err := utils.DecodeSlice(result, heartbeats)
 	if err != nil {
 		return fmt.Errorf("decode failed: %w", err)
@@ -163,6 +164,7 @@ func (hn *ImportantHeartbeatList) Callback(h *shadiaosocketio.Channel, id any, r
 
 	// decode heartbeats into slice of heartbeats
 	heartbeats := make([]state.Heartbeat, 0, len(result))
+
 	heartbeats, err := utils.DecodeSlice(result, heartbeats)
 	if err != nil {
 		return fmt.Errorf("decode failed: %w", err)

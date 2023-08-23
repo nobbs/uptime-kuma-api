@@ -30,5 +30,6 @@ func (s *State) SetLoggedIn(loggedIn bool) error {
 	defer s.mu.Unlock()
 
 	s.loggedIn = utils.NewBool(loggedIn)
+
 	return nil
 }

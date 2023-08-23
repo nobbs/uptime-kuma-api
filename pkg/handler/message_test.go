@@ -26,10 +26,10 @@ func TestMessage_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestMessage_Occured(t *testing.T) {
+func TestMessage_Occurred(t *testing.T) {
 	c := handler.NewMessage(nil)
 
-	assert.False(t, c.Occured())
+	assert.False(t, c.Occurred())
 }
 
 func TestMessage_Callback(t *testing.T) {

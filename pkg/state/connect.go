@@ -30,5 +30,6 @@ func (s *State) SetConnected(connected bool) error {
 	defer s.mu.Unlock()
 
 	s.connected = utils.NewBool(connected)
+
 	return nil
 }

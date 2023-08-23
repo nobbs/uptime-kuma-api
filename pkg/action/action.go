@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// defaultEmitTimeout is the default timeout for emited events.
+	// defaultEmitTimeout is the default timeout for emitted events.
 	defaultEmitTimeout = time.Duration(5) * time.Second
 
 	// defaultAwaitTimeout is the default timeout for awaited events.
@@ -48,14 +48,12 @@ func decode(raw any, result any) error {
 	// unmarshal the response into a generic interface so we can properly decode it
 	// into the response struct
 	var rawMap any
-	err := json.Unmarshal(rawBytes, &rawMap)
-	if err != nil {
+	if err := json.Unmarshal(rawBytes, &rawMap); err != nil {
 		return err
 	}
 
 	// unmarshal raw map into the result struct
-	err = mapstructure.WeakDecode(rawMap, result)
-	if err != nil {
+	if err := mapstructure.WeakDecode(rawMap, result); err != nil {
 		return err
 	}
 

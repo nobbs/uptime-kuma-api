@@ -29,21 +29,23 @@ func TestDisconnect_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestDisconnect_Occured(t *testing.T) {
+func TestDisconnect_Occurred(t *testing.T) {
 	s := mocks.NewDisconnectState(t)
 	c := handler.NewDisconnect(s)
 
-	assert.False(t, c.Occured())
+	assert.False(t, c.Occurred())
 }
 
 func TestDisconnect_Callback(t *testing.T) {
 	type fields struct {
 		state *mocks.DisconnectState
 	}
+
 	type args struct {
 		ch     *shadiaosocketio.Channel
 		reason websocket.CloseError
 	}
+
 	tests := []struct {
 		name   string
 		fields *fields
@@ -103,6 +105,7 @@ func TestDisconnect_Callback(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup mocks

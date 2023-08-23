@@ -33,7 +33,7 @@ func (i *Info) Register(h HandlerRegistrator) error {
 	return h.On(InfoEvent, i.Callback)
 }
 
-func (i *Info) Occured() bool {
+func (i *Info) Occurred() bool {
 	_, err := i.state.Info()
 	return err == nil
 }

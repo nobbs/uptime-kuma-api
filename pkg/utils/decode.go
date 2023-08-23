@@ -16,8 +16,7 @@ func Decode(data any, response any) error {
 func DecodeMap[V any](data map[string]any, response map[int]V) error {
 	for k, v := range data {
 		var d V
-		err := Decode(v, &d)
-		if err != nil {
+		if err := Decode(v, &d); err != nil {
 			return err
 		}
 
@@ -37,8 +36,7 @@ func DecodeMap[V any](data map[string]any, response map[int]V) error {
 func DecodeSlice[V any](data []any, response []V) ([]V, error) {
 	for _, v := range data {
 		d := new(V)
-		err := Decode(v, &d)
-		if err != nil {
+		if err := Decode(v, &d); err != nil {
 			return nil, err
 		}
 

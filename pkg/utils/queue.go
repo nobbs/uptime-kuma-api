@@ -33,6 +33,7 @@ func (q *Queue[T]) Pop() *T {
 
 	item := q.queue[0]
 	q.queue = q.queue[1:]
+
 	return &item
 }
 
@@ -73,5 +74,6 @@ func (q *Queue[T]) Trim(n int) {
 func (q *Queue[T]) Slice() []T {
 	slice := make([]T, len(q.queue))
 	copy(slice, q.queue)
+
 	return slice
 }

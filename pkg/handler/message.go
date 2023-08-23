@@ -27,7 +27,7 @@ func (m *Message) Register(h HandlerRegistrator) error {
 	return h.On(MessageEvent, m.Callback)
 }
 
-func (m *Message) Occured() bool {
+func (m *Message) Occurred() bool {
 	// TODO: implement some kind of message handling here
 	return false
 }

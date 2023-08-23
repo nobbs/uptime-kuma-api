@@ -28,24 +28,26 @@ func TestAutoLogin_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestAutoLogin_Occured(t *testing.T) {
+func TestAutoLogin_Occurred(t *testing.T) {
 	s := mocks.NewAutoLoginState(t)
 	c := handler.NewAutoLogin(s)
 
 	s.EXPECT().HasSeen(handler.AutoLoginEvent).Return(false).Once()
 	s.EXPECT().HasSeen(handler.AutoLoginEvent).Return(true).Once()
 
-	assert.False(t, c.Occured())
-	assert.True(t, c.Occured())
+	assert.False(t, c.Occurred())
+	assert.True(t, c.Occurred())
 }
 
 func TestAutoLogin_Callback(t *testing.T) {
 	type fields struct {
 		state *mocks.AutoLoginState
 	}
+
 	type args struct {
 		ch *shadiaosocketio.Channel
 	}
+
 	tests := []struct {
 		name   string
 		fields *fields
@@ -90,6 +92,7 @@ func TestAutoLogin_Callback(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup mocks

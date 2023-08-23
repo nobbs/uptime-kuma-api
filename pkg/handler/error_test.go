@@ -26,10 +26,10 @@ func TestError_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestError_Occured(t *testing.T) {
+func TestError_Occurred(t *testing.T) {
 	c := handler.NewError(nil)
 
-	assert.False(t, c.Occured())
+	assert.False(t, c.Occurred())
 }
 
 func TestError_Callback(t *testing.T) {

@@ -63,27 +63,29 @@ func TestHeartbeatImportantList_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestHeartbeatList_Occured(t *testing.T) {
+func TestHeartbeatList_Occurred(t *testing.T) {
 	s := mocks.NewHeartbeatListState(t)
 	c := handler.NewHeartbeatList(s)
 
 	s.EXPECT().Heartbeats(0).Return(nil, state.ErrNotSetYet).Once()
 	s.EXPECT().Heartbeats(0).Return([]state.Heartbeat{}, nil).Once()
 
-	assert.False(t, c.Occured())
-	assert.True(t, c.Occured())
+	assert.False(t, c.Occurred())
+	assert.True(t, c.Occurred())
 }
 
 func TestHeartbeatList_Callback(t *testing.T) {
 	type fields struct {
 		state *mocks.HeartbeatListState
 	}
+
 	type args struct {
 		ch        *shadiaosocketio.Channel
 		id        any
 		result    []any
 		overwrite any
 	}
+
 	tests := []struct {
 		name   string
 		fields *fields
@@ -192,6 +194,7 @@ func TestHeartbeatList_Callback(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup mocks

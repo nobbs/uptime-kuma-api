@@ -35,8 +35,8 @@ func (d *Disconnect) Register(h HandlerRegistrator) error {
 	return h.On(DisconnectEvent, d.Callback)
 }
 
-// Occured returns true if the event has occured at least once.
-func (d *Disconnect) Occured() bool {
+// Occurred returns true if the event has occurred at least once.
+func (d *Disconnect) Occurred() bool {
 	// TODO: implement either reconnect or exit logic
 	return false
 }

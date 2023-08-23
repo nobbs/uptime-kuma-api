@@ -29,25 +29,27 @@ func TestInfo_Register(t *testing.T) {
 	assert.NoError(t, c.Register(r))
 }
 
-func TestInfo_Occured(t *testing.T) {
+func TestInfo_Occurred(t *testing.T) {
 	s := mocks.NewInfoState(t)
 	c := handler.NewInfo(s)
 
 	s.EXPECT().Info().Return(nil, state.ErrNotSetYet).Once()
 	s.EXPECT().Info().Return(&state.Info{}, nil).Once()
 
-	assert.False(t, c.Occured())
-	assert.True(t, c.Occured())
+	assert.False(t, c.Occurred())
+	assert.True(t, c.Occurred())
 }
 
 func TestInfo_Callback(t *testing.T) {
 	type fields struct {
 		state *mocks.InfoState
 	}
+
 	type args struct {
 		ch   *shadiaosocketio.Channel
 		data any
 	}
+
 	tests := []struct {
 		name   string
 		fields *fields
@@ -138,6 +140,7 @@ func TestInfo_Callback(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// setup mocks
