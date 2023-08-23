@@ -32,11 +32,15 @@ tasks:
 
   test:
     desc: Run test suite
+    sources:
+      - "**/*.go"
     cmds:
       - go test ./... {{.CLI_ARGS}}
 
   test:integration:
     desc: Run integration tests
+    sources:
+      - "**/*.go"
     cmds:
       - go test -tags=integration ./integration/... {{.CLI_ARGS}}
 
@@ -48,6 +52,9 @@ tasks:
 
   mod:download:
     desc: Download dependencies
+    sources:
+      - go.mod
+      - go.sum
     cmds:
       - go mod download
 
