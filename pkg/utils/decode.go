@@ -12,7 +12,7 @@ func Decode(data any, response any) error {
 }
 
 // DecodeMap is a wrapper around mapstructure.WeakDecode for multiple
-// values passed as a map[string]interface{}
+// values passed as a map[string]any
 func DecodeMap[V any](data map[string]any, response map[int]V) error {
 	for k, v := range data {
 		var d V
@@ -32,7 +32,7 @@ func DecodeMap[V any](data map[string]any, response map[int]V) error {
 }
 
 // DecodeSlice is a wrapper around mapstructure.WeakDecode for multiple
-// values passed as a []interface{} - response must be a pointer to a slices
+// values passed as a []any - response must be a pointer to a slices
 func DecodeSlice[V any](data []any, response []V) ([]V, error) {
 	for _, v := range data {
 		d := new(V)
