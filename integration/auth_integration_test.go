@@ -3,12 +3,15 @@
 package integration_test
 
 import (
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/pquerna/otp/totp"
 )
 
 func TestLogin(t *testing.T) {
@@ -238,4 +241,166 @@ func TestLogout(t *testing.T) {
 	if err := action.ChangePassword(c, temporaryPassword, password); err != nil {
 		t.Fatalf("Failed to change password back to original password: %s", err)
 	}
+}
+
+func Test2fa(t *testing.T) {
+	t.Run("Prepare 2fa, but don't enable it", func(t *testing.T) {
+		c, err := newLoggedInClient()
+		if err != nil {
+			t.Fatalf("Failed to create new client: %s", err)
+		}
+		defer c.Close()
+
+		// prepare 2fa
+		totpUri, err := action.Prepare2FA(c, password)
+		if err != nil {
+			t.Fatalf("Failed to prepare 2fa: %s", err)
+		}
+
+		// check if uri is valid
+		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
+			t.Fatalf("Invalid totp uri: %s", totpUri)
+		}
+
+		// check if 2fa is not enabled
+		status, err := action.TwoFAStatus(c)
+		if err != nil {
+			t.Fatalf("Failed to get 2fa status: %s", err)
+		}
+
+		if status {
+			t.Fatalf("2fa should not be enabled")
+		}
+	})
+
+	t.Run("Prepare 2fa, enable it and disable it", func(t *testing.T) {
+		c, err := newLoggedInClient()
+		if err != nil {
+			t.Fatalf("Failed to create new client: %s", err)
+		}
+		defer c.Close()
+
+		// prepare 2fa
+		totpUri, err := action.Prepare2FA(c, password)
+		if err != nil {
+			t.Fatalf("Failed to prepare 2fa: %s", err)
+		}
+
+		// check if uri is valid
+		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
+			t.Fatalf("Invalid totp uri: %s", totpUri)
+		}
+
+		// enable 2fa
+		if err := action.Save2FA(c, password); err != nil {
+			t.Fatalf("Failed to enable 2fa: %s", err)
+		}
+
+		// check if 2fa is enabled
+		status, err := action.TwoFAStatus(c)
+		if err != nil {
+			t.Fatalf("Failed to get 2fa status: %s", err)
+		}
+
+		if !status {
+			t.Fatalf("2fa should be enabled")
+		}
+
+		// disable 2fa
+		if err := action.Disable2FA(c, password); err != nil {
+			t.Fatalf("Failed to disable 2fa: %s", err)
+		}
+
+		// check if 2fa is disabled
+		status, err = action.TwoFAStatus(c)
+		if err != nil {
+			t.Fatalf("Failed to get 2fa status: %s", err)
+		}
+
+		if status {
+			t.Fatalf("2fa should be disabled")
+		}
+	})
+
+	t.Run("Prepare 2fa, enable it and login with 2fa", func(t *testing.T) {
+		c, err := newLoggedInClient()
+		if err != nil {
+			t.Fatalf("Failed to create new client: %s", err)
+		}
+		defer c.Close()
+
+		// prepare 2fa
+		totpUri, err := action.Prepare2FA(c, password)
+		if err != nil {
+			t.Fatalf("Failed to prepare 2fa: %s", err)
+		}
+
+		// check if uri is valid
+		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
+			t.Fatalf("Invalid totp uri: %s", totpUri)
+		}
+
+		// enable 2fa
+		if err := action.Save2FA(c, password); err != nil {
+			t.Fatalf("Failed to enable 2fa: %s", err)
+		}
+
+		// verify 2fa, should fail as it's invalid
+		valid, err := action.VerifyToken(c, password, "wrongtoken")
+		if err == nil {
+			t.Fatalf("Token should be invalid")
+		}
+
+		if valid {
+			t.Fatalf("Token should not be valid")
+		}
+
+		// parse secret from uri
+		u, err := url.Parse(totpUri)
+		if err != nil {
+			t.Fatalf("Failed to parse totp uri: %s", err)
+		}
+
+		// compute valid token
+		secret := u.Query().Get("secret")
+		token, err := totp.GenerateCode(secret, time.Now())
+		if err != nil {
+			t.Fatalf("Failed to generate token: %s", err)
+		}
+
+		// verify token, should be valid
+		valid, err = action.VerifyToken(c, password, token)
+		if err != nil {
+			t.Fatalf("Failed to verify token: %s", err)
+		}
+
+		if !valid {
+			t.Fatalf("Token should be valid")
+		}
+
+		// logout
+		if err := action.Logout(c); err != nil {
+			t.Fatalf("Failed to logout: %s", err)
+		}
+
+		// login again with 2fa
+		if _, err := action.Login(c, username, password, token); err != nil {
+			t.Fatalf("Failed to login: %s", err)
+		}
+
+		// check if 2fa is enabled
+		status, err := action.TwoFAStatus(c)
+		if err != nil {
+			t.Fatalf("Failed to get 2fa status: %s", err)
+		}
+
+		if !status {
+			t.Fatalf("2fa should be enabled")
+		}
+
+		// disable 2fa
+		if err := action.Disable2FA(c, password); err != nil {
+			t.Fatalf("Failed to disable 2fa: %s", err)
+		}
+	})
 }
