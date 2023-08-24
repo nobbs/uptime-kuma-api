@@ -26,6 +26,9 @@ type State struct {
 	// Stores the info data.
 	info *Info
 
+	// Stores the monitors.
+	monitors map[int]*Monitor
+
 	// Stores the heartbeats.
 	heartbeats map[int]HeartbeatQueue
 
@@ -44,6 +47,7 @@ func NewState() *State {
 		loggedIn:            utils.NewBool(false),
 		autoLogin:           nil,
 		info:                nil,
+		monitors:            nil,
 		heartbeats:          nil,
 		importantHeartbeats: nil,
 		tags:                nil,
