@@ -51,6 +51,21 @@ func newConnectedClient() (*client.Client, error) {
 	return c, nil
 }
 
+func newLoggedInClient() (*client.Client, error) {
+	// create new client
+	c, err := newConnectedClient()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create new client: %s", err)
+	}
+
+	// login
+	if _, err = action.Login(c, username, password, ""); err != nil {
+		return nil, fmt.Errorf("Failed to login: %s", err)
+	}
+
+	return c, nil
+}
+
 // setupUptimeKumaServer sets up a new Uptime Kuma server, i.e. it sets the username and password
 // for the server. If the server is already setup, it will not be setup again.
 func setupUptimeKumaServer() error {
