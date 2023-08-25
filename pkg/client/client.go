@@ -87,6 +87,7 @@ func NewClientWithConnection(socketio Connection) (c *Client, err error) {
 		handler.ImportantHeartbeatListEvent: handler.NewImportantHeartbeatList(s),
 		handler.InfoEvent:                   handler.NewInfo(s),
 		handler.MessageEvent:                handler.NewMessage(s),
+		handler.MonitorListEvent:            handler.NewMonitorList(s),
 	}
 
 	// create new client instance
