@@ -11,7 +11,6 @@ const (
 )
 
 type AutoLoginState interface {
-	AutoLogin() (autoLogin bool, err error)
 	SetAutoLogin(autoLogin bool) (err error)
 	HasSeen(event string) (seen bool)
 	MarkSeen(event string)
