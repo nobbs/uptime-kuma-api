@@ -17,57 +17,6 @@ func (_m *AutoLoginState) EXPECT() *AutoLoginState_Expecter {
 	return &AutoLoginState_Expecter{mock: &_m.Mock}
 }
 
-// AutoLogin provides a mock function with given fields:
-func (_m *AutoLoginState) AutoLogin() (bool, error) {
-	ret := _m.Called()
-
-	var r0 bool
-	var r1 error
-	if rf, ok := ret.Get(0).(func() (bool, error)); ok {
-		return rf()
-	}
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// AutoLoginState_AutoLogin_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AutoLogin'
-type AutoLoginState_AutoLogin_Call struct {
-	*mock.Call
-}
-
-// AutoLogin is a helper method to define mock.On call
-func (_e *AutoLoginState_Expecter) AutoLogin() *AutoLoginState_AutoLogin_Call {
-	return &AutoLoginState_AutoLogin_Call{Call: _e.mock.On("AutoLogin")}
-}
-
-func (_c *AutoLoginState_AutoLogin_Call) Run(run func()) *AutoLoginState_AutoLogin_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *AutoLoginState_AutoLogin_Call) Return(autoLogin bool, err error) *AutoLoginState_AutoLogin_Call {
-	_c.Call.Return(autoLogin, err)
-	return _c
-}
-
-func (_c *AutoLoginState_AutoLogin_Call) RunAndReturn(run func() (bool, error)) *AutoLoginState_AutoLogin_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // HasSeen provides a mock function with given fields: event
 func (_m *AutoLoginState) HasSeen(event string) bool {
 	ret := _m.Called(event)
