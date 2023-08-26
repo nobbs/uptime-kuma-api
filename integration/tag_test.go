@@ -8,9 +8,25 @@ import (
 
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/nobbs/uptime-kuma-api/testutil"
 )
 
 func TestTags(t *testing.T) {
+	t.Parallel()
+
+	const (
+		username string = "testuser"
+		password string = "testpassword123"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
+
 	wantTags := []state.Tag{
 		{
 			Id:    1,
@@ -23,11 +39,17 @@ func TestTags(t *testing.T) {
 			Color: "#00ff00",
 		},
 	}
+	modifiedTag := state.Tag{
+		Id:    1,
+		Name:  "Test tag modified",
+		Color: "#0000ff",
+	}
 
-	c, err := newLoggedInClient()
+	c, err := server.NewClientWithLoginByUsernameAndPassword()
 	if err != nil {
 		t.Fatalf("Failed to create new client: %s", err)
 	}
+	defer c.Close()
 
 	t.Run("Get tags, should be empty", func(t *testing.T) {
 		// get tags
@@ -102,13 +124,9 @@ func TestTags(t *testing.T) {
 		}
 	})
 
-	// modify first tag
-	wantTags[0].Name = "Test tag edited"
-	wantTags[0].Color = "#0000ff"
-
 	t.Run("Edit first tag", func(t *testing.T) {
 		// edit tag
-		tag, err := action.EditTag(c, wantTags[0].Id, wantTags[0].Name, wantTags[0].Color)
+		tag, err := action.EditTag(c, modifiedTag.Id, modifiedTag.Name, modifiedTag.Color)
 		if err != nil {
 			t.Fatalf("Failed to edit tag: %s", err)
 		}
@@ -116,8 +134,8 @@ func TestTags(t *testing.T) {
 		switch {
 		case tag == nil:
 			t.Fatalf("Expected tag, got none")
-		case !reflect.DeepEqual(tag, &wantTags[0]):
-			t.Fatalf("Expected tag to be '%v', got '%v'", &wantTags[0], tag)
+		case !reflect.DeepEqual(tag, &modifiedTag):
+			t.Fatalf("Expected tag to be '%v', got '%v'", &modifiedTag, tag)
 		}
 	})
 

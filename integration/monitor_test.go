@@ -10,16 +10,32 @@ import (
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/testutil"
 )
 
 func TestMonitors(t *testing.T) {
-	t.Run("Trigger get monitor list event, wait for it; should be empty", func(t *testing.T) {
-		c, err := newLoggedInClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
-		defer c.Close()
+	t.Parallel()
 
+	const (
+		username string = "testuser"
+		password string = "testpassword123"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
+
+	c, err := server.NewClientWithLoginByUsernameAndPassword()
+	if err != nil {
+		t.Fatalf("Failed to create new client: %s", err)
+	}
+	defer c.Close()
+
+	t.Run("Trigger get monitor list event, wait for it; should be empty", func(t *testing.T) {
 		if err := action.GetMonitorList(c); err != nil {
 			t.Fatalf("Failed to get monitor list: %s", err)
 		}
@@ -50,12 +66,6 @@ func TestMonitors(t *testing.T) {
 			Maxretries:    3,
 			Method:        utils.NewString("GET"),
 		}
-
-		c, err := newLoggedInClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
-		defer c.Close()
 
 		id, err := action.AddMonitor(c, monitor)
 		if err != nil {

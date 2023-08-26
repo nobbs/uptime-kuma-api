@@ -11,13 +11,29 @@ import (
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/testutil"
 	"github.com/pquerna/otp/totp"
 )
 
 func TestLogin(t *testing.T) {
+	t.Parallel()
+
+	const (
+		username string = "testuser"
+		password string = "testpassword123"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
+
 	t.Run("Login with correct credentials", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -31,7 +47,7 @@ func TestLogin(t *testing.T) {
 
 	t.Run("Login with wrong credentials", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -45,25 +61,39 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLoginByToken(t *testing.T) {
+	t.Parallel()
+
 	var token string
 
-	t.Run("Login to get token", func(t *testing.T) {
-		// create new client and wait for connection
-		c, err := newConnectedClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
-		defer c.Close()
+	const (
+		username string = "testuser"
+		password string = "testpassword123"
+	)
 
-		// login to get valid token
-		if token, err = action.Login(c, username, password, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
-	})
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
+
+	// create new client and wait for connection
+	c, err := server.NewClient()
+	if err != nil {
+		t.Fatalf("Failed to create new client: %s", err)
+	}
+
+	// login to get valid token
+	if token, err = action.Login(c, username, password, ""); err != nil {
+		t.Fatalf("Failed to login: %s", err)
+	}
+
+	c.Close()
 
 	t.Run("Login with valid token", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -77,7 +107,7 @@ func TestLoginByToken(t *testing.T) {
 
 	t.Run("Login with invalid token", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -91,11 +121,25 @@ func TestLoginByToken(t *testing.T) {
 }
 
 func TestAutoLogin(t *testing.T) {
-	const awaitTimeout = time.Duration(1) * time.Second
+	t.Parallel()
+
+	const (
+		username     string        = "testuser"
+		password     string        = "testpassword123"
+		awaitTimeout time.Duration = time.Duration(1) * time.Second
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
 
 	t.Run("Auto login disabled", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -109,7 +153,7 @@ func TestAutoLogin(t *testing.T) {
 
 	t.Run("Auto login enabled", func(t *testing.T) {
 		// create new client and wait for connection
-		c, err := newConnectedClient()
+		c, err := server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -125,15 +169,13 @@ func TestAutoLogin(t *testing.T) {
 		}, password); err != nil {
 			t.Fatalf("Failed to set settings: %s", err)
 		}
-		// close client
 		c.Close()
 
 		// create new client and wait for connection
-		c, err = newConnectedClient()
+		c, err = server.NewClient()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
-		defer c.Close()
 
 		// wait for auto login event to happen
 		if err := c.Await(handler.AutoLoginEvent, awaitTimeout); err != nil {
@@ -146,14 +188,29 @@ func TestAutoLogin(t *testing.T) {
 		}, password); err != nil {
 			t.Fatalf("Failed to set settings: %s", err)
 		}
+		c.Close()
 	})
 }
 
 func TestChangePassword(t *testing.T) {
-	const temporaryPassword string = "temporarypassword321"
+	t.Parallel()
+
+	const (
+		username          string = "testuser"
+		password          string = "testpassword123"
+		temporaryPassword string = "temporarypassword321"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
 
 	// create new client and wait for connection
-	c, err := newConnectedClient()
+	c, err := server.NewClient()
 	if err != nil {
 		t.Fatalf("Failed to create new client: %s", err)
 	}
@@ -205,10 +262,24 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	const temporaryPassword string = "temporarypassword321"
+	t.Parallel()
+
+	const (
+		username          string = "testuser"
+		password          string = "testpassword123"
+		temporaryPassword string = "temporarypassword321"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
 
 	// create new client and wait for connection
-	c, err := newConnectedClient()
+	c, err := server.NewClient()
 	if err != nil {
 		t.Fatalf("Failed to create new client: %s", err)
 	}
@@ -244,8 +315,23 @@ func TestLogout(t *testing.T) {
 }
 
 func Test2fa(t *testing.T) {
+	t.Parallel()
+
+	const (
+		username string = "testuser"
+		password string = "testpassword123"
+	)
+
+	// create new uptime-kuma server
+	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
+	if err != nil {
+		panic(err)
+	}
+
+	t.Cleanup(server.Teardown)
+
 	t.Run("Prepare 2fa, but don't enable it", func(t *testing.T) {
-		c, err := newLoggedInClient()
+		c, err := server.NewClientWithLoginByUsernameAndPassword()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -274,7 +360,7 @@ func Test2fa(t *testing.T) {
 	})
 
 	t.Run("Prepare 2fa, enable it and disable it", func(t *testing.T) {
-		c, err := newLoggedInClient()
+		c, err := server.NewClientWithLoginByUsernameAndPassword()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
@@ -323,7 +409,7 @@ func Test2fa(t *testing.T) {
 	})
 
 	t.Run("Prepare 2fa, enable it and login with 2fa", func(t *testing.T) {
-		c, err := newLoggedInClient()
+		c, err := server.NewClientWithLoginByUsernameAndPassword()
 		if err != nil {
 			t.Fatalf("Failed to create new client: %s", err)
 		}
