@@ -6,7 +6,7 @@ var validate *validator.Validate
 
 // Validator returns a validator instance. This is a singleton, as the validator provides caching
 // capabilities built-in.
-func getValidator() *validator.Validate {
+func GetValidator() *validator.Validate {
 	if validate == nil {
 		validate = validator.New()
 	}
@@ -16,10 +16,10 @@ func getValidator() *validator.Validate {
 
 // ValidateStruct validates a struct and returns an error if the validation fails.
 func ValidateStruct(s any) error {
-	return getValidator().Struct(s)
+	return GetValidator().Struct(s)
 }
 
 // ValidateVar validates a variable and returns an error if the validation fails.
 func ValidateVar(s any, tag string) error {
-	return getValidator().Var(s, tag)
+	return GetValidator().Var(s, tag)
 }

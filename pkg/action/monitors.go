@@ -170,6 +170,11 @@ func AddMonitor(c StatefulEmiter, monitor *state.Monitor) (int, error) {
 		return 0, NewErrAwaitFailed(handler.ConnectEvent, err)
 	}
 
+	// validate monitor
+	if err := monitor.Validate(); err != nil {
+		return 0, err
+	}
+
 	// call action
 	response, err := c.Emit(addMonitorAction, defaultEmitTimeout, monitor)
 	if err != nil {
@@ -195,6 +200,11 @@ func EditMonitor(c StatefulEmiter, monitor *state.Monitor) (int, error) {
 	// ensure client is connected
 	if err := c.Await(handler.ConnectEvent, defaultAwaitTimeout); err != nil {
 		return 0, NewErrAwaitFailed(handler.ConnectEvent, err)
+	}
+
+	// validate monitor
+	if err := monitor.Validate(); err != nil {
+		return 0, err
 	}
 
 	// call action

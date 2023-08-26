@@ -1,12 +1,22 @@
 package state
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+)
 
 // Tag represents a tag object.
 type Tag struct {
-	Color string `mapstructure:"color"`
-	Id    int    `mapstructure:"id"`
-	Name  string `mapstructure:"name"`
+	Id    int     `mapstructure:"id"    validate:"required,gt=0"`
+	Name  string  `mapstructure:"name"  validate:"required"`
+	Color string  `mapstructure:"color" validate:"required,hexcolor"`
+	Value *string `json:"-"             mapstructure:"value"`
+}
+
+// Validate validates the tag.
+func (t *Tag) Validate() error {
+	return utils.ValidateStruct(t)
 }
 
 // Tag returns the tag with the given id.
@@ -80,7 +90,7 @@ func (s *State) SetTag(tag *Tag) error {
 	defer s.mu.Unlock()
 
 	if s.tags == nil {
-		return ErrNotSetYet
+		s.tags = make(map[int]*Tag)
 	}
 
 	s.tags[tag.Id] = tag
