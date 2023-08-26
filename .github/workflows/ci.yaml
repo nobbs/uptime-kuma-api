@@ -41,6 +41,8 @@ jobs:
 
       - name: Setup Task
         uses: arduino/setup-task@v1
+        with:
+          version: "3.28.0"
 
       - name: Download go mod dependencies
         run: task mod:download
@@ -79,6 +81,8 @@ jobs:
 
       - name: Setup Task
         uses: arduino/setup-task@v1
+        with:
+          version: "3.28.0"
 
       - name: Download go mod dependencies
         run: task mod:download
