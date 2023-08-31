@@ -4,15 +4,17 @@ package integration_test
 
 import (
 	"net/url"
-	"strings"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
+	"github.com/nobbs/uptime-kuma-api/pkg/client"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
 	"github.com/nobbs/uptime-kuma-api/testutil"
 	"github.com/pquerna/otp/totp"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLogin(t *testing.T) {
@@ -25,98 +27,79 @@ func TestLogin(t *testing.T) {
 
 	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	t.Run("Login with correct credentials", func(t *testing.T) {
 		// create new client and wait for connection
 		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
 		// login
-		if _, err := action.Login(c, username, password, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+		jwt, err := action.Login(c, username, password, "")
+		assert.NoError(t, err, "Should not return error")
+		assert.NotEmpty(t, jwt, "Should return jwt token")
 	})
 
 	t.Run("Login with wrong credentials", func(t *testing.T) {
 		// create new client and wait for connection
 		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
 		// login with wrong password, should fail
-		if _, err := action.Login(c, username, "wrongpassword", ""); err == nil {
-			t.Fatalf("Login with wrong password should fail")
-		}
+		jwt, err := action.Login(c, username, "wrongpassword", "")
+		assert.ErrorAs(t, err, &action.ErrLoginFailed{}, "Should return error")
+		assert.ErrorContains(t, err, "Incorrect username or password", "Should return error")
+		assert.Empty(t, jwt, "Should not return jwt token")
 	})
 }
 
 func TestLoginByToken(t *testing.T) {
 	t.Parallel()
 
-	var token string
-
 	const (
 		username string = "testuser"
 		password string = "testpassword123"
 	)
 
+	var jwt string
+
 	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	// create new client and wait for connection
 	c, err := server.NewClient()
-	if err != nil {
-		t.Fatalf("Failed to create new client: %s", err)
-	}
+	assert.NoError(t, err, "Should not return error")
 
 	// login to get valid token
-	if token, err = action.Login(c, username, password, ""); err != nil {
-		t.Fatalf("Failed to login: %s", err)
-	}
+	jwt, err = action.Login(c, username, password, "")
+	assert.NoError(t, err, "Should not return error")
+	assert.NotEmpty(t, jwt, "Should return jwt token")
 
 	c.Close()
 
 	t.Run("Login with valid token", func(t *testing.T) {
-		// create new client and wait for connection
 		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
-		// login by token
-		if err := action.LoginByToken(c, token); err != nil {
-			t.Fatalf("Failed to login by token: %s", err)
-		}
+		err = action.LoginByToken(c, jwt)
+		assert.NoError(t, err, "Should not return error")
 	})
 
 	t.Run("Login with invalid token", func(t *testing.T) {
-		// create new client and wait for connection
 		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
 		// login by token with wrong token
-		if err := action.LoginByToken(c, "wrong"); err == nil {
-			t.Fatalf("Login by token should fail")
-		}
+		err = action.LoginByToken(c, "wrong")
+		assert.ErrorAs(t, err, &action.ErrLoginFailed{}, "Should return error")
+		assert.ErrorContains(t, err, "Invalid token", "Should return error")
 	})
 }
 
@@ -129,66 +112,42 @@ func TestAutoLogin(t *testing.T) {
 		awaitTimeout time.Duration = time.Duration(1) * time.Second
 	)
 
-	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	t.Run("Auto login disabled", func(t *testing.T) {
-		// create new client and wait for connection
 		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
 		// wait for auto login event to not happen
-		if err := c.Await(handler.AutoLoginEvent, awaitTimeout); err == nil {
-			t.Fatalf("Auto login event should not happen")
-		}
+		err = c.Await(handler.AutoLoginEvent, awaitTimeout)
+		assert.ErrorIs(t, err, client.ErrTimeout, "Auto login event should not happen")
 	})
 
 	t.Run("Auto login enabled", func(t *testing.T) {
-		// create new client and wait for connection
-		c, err := server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
+		settings := &action.Settings{
+			DisableAuth: utils.NewBool(true),
 		}
 
-		// login
-		if _, err := action.Login(c, username, password, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+		c, err := server.NewClient()
+		assert.NoError(t, err, "Should not return error")
+
+		_, err = action.Login(c, username, password, "")
+		assert.NoError(t, err, "Should not return error")
 
 		// enable auto login by setting disableAuth to true
-		if err := action.SetSettings(c, &action.Settings{
-			DisableAuth: utils.NewBool(true),
-		}, password); err != nil {
-			t.Fatalf("Failed to set settings: %s", err)
-		}
+		err = action.SetSettings(c, settings, password)
+		assert.NoError(t, err, "Should not return error")
 		c.Close()
 
-		// create new client and wait for connection
 		c, err = server.NewClient()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
+		defer c.Close()
 
-		// wait for auto login event to happen
-		if err := c.Await(handler.AutoLoginEvent, awaitTimeout); err != nil {
-			t.Fatalf("Auto login event should happen")
-		}
-
-		// enable auth again
-		if err := action.SetSettings(c, &action.Settings{
-			DisableAuth: utils.NewBool(false),
-		}, password); err != nil {
-			t.Fatalf("Failed to set settings: %s", err)
-		}
-		c.Close()
+		err = c.Await(handler.AutoLoginEvent, awaitTimeout)
+		assert.NoError(t, err, "Should not return error")
 	})
 }
 
@@ -201,64 +160,45 @@ func TestChangePassword(t *testing.T) {
 		temporaryPassword string = "temporarypassword321"
 	)
 
-	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
-	// create new client and wait for connection
 	c, err := server.NewClient()
-	if err != nil {
-		t.Fatalf("Failed to create new client: %s", err)
-	}
+	assert.NoError(t, err, "Should not return error")
+
 	defer c.Close()
 
-	t.Run("Change password with correct current password", func(t *testing.T) {
-		if _, err := action.Login(c, username, password, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+	// change password to temporary password
+	_, err = action.Login(c, username, password, "")
+	assert.NoError(t, err, "Should not return error")
 
-		// change password
-		if err := action.ChangePassword(c, password, temporaryPassword); err != nil {
-			t.Fatalf("Failed to change password: %s", err)
-		}
+	err = action.ChangePassword(c, password, temporaryPassword)
+	assert.NoError(t, err, "Should not return error")
 
-		if err := action.Logout(c); err != nil {
-			t.Fatalf("Failed to logout: %s", err)
-		}
-	})
+	err = action.Logout(c)
+	assert.NoError(t, err, "Should not return error")
 
-	t.Run("Change password with wrong current password", func(t *testing.T) {
-		if _, err := action.Login(c, username, temporaryPassword, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+	// try to change password given wrong password, should fail
+	_, err = action.Login(c, username, temporaryPassword, "")
+	assert.NoError(t, err, "Should not return error")
 
-		// change password with wrong current password, should fail
-		if err := action.ChangePassword(c, "wrongpassword", password); err == nil {
-			t.Fatalf("Change password with wrong current password should fail")
-		}
+	err = action.ChangePassword(c, "wrongpassword", password)
+	assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+	assert.ErrorContains(t, err, "Incorrect current password", "Should return error")
 
-		if err := action.Logout(c); err != nil {
-			t.Fatalf("Failed to logout: %s", err)
-		}
-	})
+	err = action.Logout(c)
+	assert.NoError(t, err, "Should not return error")
 
-	t.Run("Change password back to original password", func(t *testing.T) {
-		if _, err := action.Login(c, username, temporaryPassword, ""); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+	// change password back to original password
+	_, err = action.Login(c, username, temporaryPassword, "")
+	assert.NoError(t, err, "Should not return error")
 
-		if err := action.ChangePassword(c, temporaryPassword, password); err != nil {
-			t.Fatalf("Failed to change password back to original password: %s", err)
-		}
+	err = action.ChangePassword(c, temporaryPassword, password)
+	assert.NoError(t, err, "Should not return error")
 
-		if err := action.Logout(c); err != nil {
-			t.Fatalf("Failed to logout: %s", err)
-		}
-	})
+	err = action.Logout(c)
+	assert.NoError(t, err, "Should not return error")
 }
 
 func TestLogout(t *testing.T) {
@@ -272,46 +212,40 @@ func TestLogout(t *testing.T) {
 
 	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	// create new client and wait for connection
 	c, err := server.NewClient()
-	if err != nil {
-		t.Fatalf("Failed to create new client: %s", err)
-	}
+	assert.NoError(t, err, "Should not return error")
+
 	defer c.Close()
 
-	if _, err := action.Login(c, username, password, ""); err != nil {
-		t.Fatalf("Failed to login: %s", err)
-	}
+	_, err = action.Login(c, username, password, "")
+	assert.NoError(t, err, "Should not return error")
 
 	// try to change password, should work as we are logged in
-	if err := action.ChangePassword(c, password, temporaryPassword); err != nil {
-		t.Fatalf("Failed to change password: %s", err)
-	}
+	err = action.ChangePassword(c, password, temporaryPassword)
+	assert.NoError(t, err, "Should not return error")
 
 	// logout
-	if err := action.Logout(c); err != nil {
-		t.Fatalf("Failed to logout: %s", err)
-	}
+	err = action.Logout(c)
+	assert.NoError(t, err, "Should not return error")
 
 	// try to change password, should fail as we are logged out
-	if err := action.ChangePassword(c, temporaryPassword, password); err == nil {
-		t.Fatalf("Change password should fail as we are logged out")
-	}
+	err = action.ChangePassword(c, temporaryPassword, password)
+	assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+	assert.ErrorContains(t, err, "You are not logged in", "Should return error")
 
-	if _, err := action.Login(c, username, temporaryPassword, ""); err != nil {
-		t.Fatalf("Failed to login: %s", err)
-	}
+	_, err = action.Login(c, username, temporaryPassword, "")
+	assert.NoError(t, err, "Should not return error")
 
 	// change password back to original password
-	if err := action.ChangePassword(c, temporaryPassword, password); err != nil {
-		t.Fatalf("Failed to change password back to original password: %s", err)
-	}
+	err = action.ChangePassword(c, temporaryPassword, password)
+	assert.NoError(t, err, "Should not return error")
+
+	err = action.Logout(c)
+	assert.NoError(t, err, "Should not return error")
 }
 
 func Test2fa(t *testing.T) {
@@ -324,169 +258,104 @@ func Test2fa(t *testing.T) {
 
 	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	t.Run("Prepare 2fa, but don't enable it", func(t *testing.T) {
 		c, err := server.NewClientWithLoginByUsernameAndPassword()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
-		// prepare 2fa
+		// prepare 2fa, check if URI is valid
 		totpUri, err := action.Prepare2FA(c, password)
-		if err != nil {
-			t.Fatalf("Failed to prepare 2fa: %s", err)
-		}
-
-		// check if uri is valid
-		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
-			t.Fatalf("Invalid totp uri: %s", totpUri)
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.Regexp(t, regexp.MustCompile("^otpauth://totp/Uptime.*"), totpUri, "Should match regex")
 
 		// check if 2fa is not enabled
 		status, err := action.TwoFAStatus(c)
-		if err != nil {
-			t.Fatalf("Failed to get 2fa status: %s", err)
-		}
-
-		if status {
-			t.Fatalf("2fa should not be enabled")
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.False(t, status, "Should not be enabled")
 	})
 
 	t.Run("Prepare 2fa, enable it and disable it", func(t *testing.T) {
 		c, err := server.NewClientWithLoginByUsernameAndPassword()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
-		// prepare 2fa
+		// prepare 2fa, check if URI is valid
 		totpUri, err := action.Prepare2FA(c, password)
-		if err != nil {
-			t.Fatalf("Failed to prepare 2fa: %s", err)
-		}
-
-		// check if uri is valid
-		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
-			t.Fatalf("Invalid totp uri: %s", totpUri)
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.Regexp(t, regexp.MustCompile("^otpauth://totp/Uptime.*"), totpUri, "Should match regex")
 
 		// enable 2fa
-		if err := action.Save2FA(c, password); err != nil {
-			t.Fatalf("Failed to enable 2fa: %s", err)
-		}
+		err = action.Save2FA(c, password)
+		assert.NoError(t, err, "Should not return error")
 
 		// check if 2fa is enabled
 		status, err := action.TwoFAStatus(c)
-		if err != nil {
-			t.Fatalf("Failed to get 2fa status: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.True(t, status, "Should be enabled")
 
-		if !status {
-			t.Fatalf("2fa should be enabled")
-		}
-
-		// disable 2fa
-		if err := action.Disable2FA(c, password); err != nil {
-			t.Fatalf("Failed to disable 2fa: %s", err)
-		}
+		// disable 2fa, check if 2fa is disabled
+		err = action.Disable2FA(c, password)
+		assert.NoError(t, err, "Should not return error")
 
 		// check if 2fa is disabled
 		status, err = action.TwoFAStatus(c)
-		if err != nil {
-			t.Fatalf("Failed to get 2fa status: %s", err)
-		}
-
-		if status {
-			t.Fatalf("2fa should be disabled")
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.False(t, status, "Should not be enabled")
 	})
 
 	t.Run("Prepare 2fa, enable it and login with 2fa", func(t *testing.T) {
 		c, err := server.NewClientWithLoginByUsernameAndPassword()
-		if err != nil {
-			t.Fatalf("Failed to create new client: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 		defer c.Close()
 
-		// prepare 2fa
+		// prepare 2fa, check if URI is valid
 		totpUri, err := action.Prepare2FA(c, password)
-		if err != nil {
-			t.Fatalf("Failed to prepare 2fa: %s", err)
-		}
-
-		// check if uri is valid
-		if !strings.HasPrefix(totpUri, "otpauth://totp/Uptime%20Kuma") {
-			t.Fatalf("Invalid totp uri: %s", totpUri)
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.Regexp(t, regexp.MustCompile("^otpauth://totp/Uptime.*"), totpUri, "Should match regex")
 
 		// enable 2fa
-		if err := action.Save2FA(c, password); err != nil {
-			t.Fatalf("Failed to enable 2fa: %s", err)
-		}
+		err = action.Save2FA(c, password)
+		assert.NoError(t, err, "Should not return error")
 
 		// verify 2fa, should fail as it's invalid
 		valid, err := action.VerifyToken(c, password, "wrongtoken")
-		if err == nil {
-			t.Fatalf("Token should be invalid")
-		}
-
-		if valid {
-			t.Fatalf("Token should not be valid")
-		}
+		assert.Error(t, err, "Should return error")
+		assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+		assert.ErrorContains(t, err, "Invalid Token", "Should return error")
+		assert.False(t, valid, "Should not be valid")
 
 		// parse secret from uri
 		u, err := url.Parse(totpUri)
-		if err != nil {
-			t.Fatalf("Failed to parse totp uri: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 
 		// compute valid token
 		secret := u.Query().Get("secret")
 		token, err := totp.GenerateCode(secret, time.Now())
-		if err != nil {
-			t.Fatalf("Failed to generate token: %s", err)
-		}
+		assert.NoError(t, err, "Should not return error")
 
 		// verify token, should be valid
 		valid, err = action.VerifyToken(c, password, token)
-		if err != nil {
-			t.Fatalf("Failed to verify token: %s", err)
-		}
-
-		if !valid {
-			t.Fatalf("Token should be valid")
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.True(t, valid, "Should be valid")
 
 		// logout
-		if err := action.Logout(c); err != nil {
-			t.Fatalf("Failed to logout: %s", err)
-		}
+		err = action.Logout(c)
+		assert.NoError(t, err, "Should not return error")
 
 		// login again with 2fa
-		if _, err := action.Login(c, username, password, token); err != nil {
-			t.Fatalf("Failed to login: %s", err)
-		}
+		_, err = action.Login(c, username, password, token)
+		assert.NoError(t, err, "Should not return error")
 
 		// check if 2fa is enabled
 		status, err := action.TwoFAStatus(c)
-		if err != nil {
-			t.Fatalf("Failed to get 2fa status: %s", err)
-		}
-
-		if !status {
-			t.Fatalf("2fa should be enabled")
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.True(t, status, "Should be enabled")
 
 		// disable 2fa
-		if err := action.Disable2FA(c, password); err != nil {
-			t.Fatalf("Failed to disable 2fa: %s", err)
-		}
+		err = action.Disable2FA(c, password)
+		assert.NoError(t, err, "Should not return error")
 	})
 }
