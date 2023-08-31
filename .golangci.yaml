@@ -12,6 +12,7 @@ linters:
     - gofmt
     - gofumpt
     - goimports
+    - gci
     - gosec
     - misspell
     - tagalign

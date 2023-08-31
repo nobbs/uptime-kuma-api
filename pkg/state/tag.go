@@ -54,15 +54,15 @@ func (s *State) Tags() ([]Tag, error) {
 	}
 
 	// Convert map to slice.
-	tags := make([]Tag, len(s.tags))
-	for _, tag := range s.tags {
-		tags = append(tags, *tag)
+	tags := make([]Tag, 0, len(s.tags))
+	for i := range s.tags {
+		tags = append(tags, *s.tags[i])
 	}
 
 	return tags, nil
 }
 
-// SetTags sets the tags received from Uptime Kuma.
+// SetTags clears the current tags and sets the given tags.
 func (s *State) SetTags(tags []Tag) error {
 	if s == nil {
 		return ErrStateNil

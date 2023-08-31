@@ -1,13 +1,13 @@
-//go:build integration
+//go:build e2e
 
-package integration_test
+package e2e_test
 
 import (
 	"testing"
 
+	"github.com/nobbs/uptime-kuma-api/e2e/testutil"
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
-	"github.com/nobbs/uptime-kuma-api/testutil"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -44,11 +44,19 @@ tasks:
     cmds:
       - go test -tags=integration ./integration/... {{.CLI_ARGS}}
 
+  test:e2e:
+    desc: Run e2e tests
+    sources:
+      - "**/*.go"
+    cmds:
+      - go test -tags=e2e ./e2e/... {{.CLI_ARGS}}
+
   test:all:
     desc: Run all tests
     cmds:
       - task: test
       - task: test:integration
+      - task: test:e2e
 
   mod:download:
     desc: Download dependencies
