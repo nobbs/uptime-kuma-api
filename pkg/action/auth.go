@@ -131,7 +131,7 @@ func Login(c StatefulEmiter, username, password, token string) (string, error) {
 
 	// check if login was successful
 	if !data.Ok {
-		return "", NewErrActionFailed(loginAction, *data.Msg)
+		return "", NewErrLoginFailed(*data.Msg)
 	}
 
 	// set logged in to true
