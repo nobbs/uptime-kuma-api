@@ -93,6 +93,10 @@ func (s *State) SetTag(tag *Tag) error {
 		s.tags = make(map[int]*Tag)
 	}
 
+	if tag == nil {
+		return fmt.Errorf("tag is nil")
+	}
+
 	s.tags[tag.Id] = tag
 
 	return nil
