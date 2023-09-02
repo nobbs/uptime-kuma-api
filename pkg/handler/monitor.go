@@ -7,6 +7,7 @@ import (
 	"github.com/Baiguoshuai1/shadiaosocketio"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -46,7 +47,7 @@ func (ml MonitorList) Callback(ch *shadiaosocketio.Channel, data any) error {
 	// assert data type
 	typedData, ok := data.(map[string]any)
 	if !ok {
-		return NewErrInvalidDataType("map[string]any", data)
+		return xerrors.NewErrInvalidDataType("map[string]any", data)
 	}
 
 	// decode data into struct

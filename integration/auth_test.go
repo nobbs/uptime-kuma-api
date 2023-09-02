@@ -13,6 +13,7 @@ import (
 	"github.com/nobbs/uptime-kuma-api/pkg/client"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/assert"
 )
@@ -50,7 +51,7 @@ func TestLogin(t *testing.T) {
 
 		// login with wrong password, should fail
 		jwt, err := action.Login(c, username, "wrongpassword", "")
-		assert.ErrorAs(t, err, &action.ErrLoginFailed{}, "Should return error")
+		assert.ErrorAs(t, err, &xerrors.ErrLoginFailed{}, "Should return error")
 		assert.ErrorContains(t, err, "Incorrect username or password", "Should return error")
 		assert.Empty(t, jwt, "Should not return jwt token")
 	})
@@ -98,7 +99,7 @@ func TestLoginByToken(t *testing.T) {
 
 		// login by token with wrong token
 		err = action.LoginByToken(c, "wrong")
-		assert.ErrorAs(t, err, &action.ErrLoginFailed{}, "Should return error")
+		assert.ErrorAs(t, err, &xerrors.ErrLoginFailed{}, "Should return error")
 		assert.ErrorContains(t, err, "Invalid token", "Should return error")
 	})
 }
@@ -184,7 +185,7 @@ func TestChangePassword(t *testing.T) {
 	assert.NoError(t, err, "Should not return error")
 
 	err = action.ChangePassword(c, "wrongpassword", password)
-	assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+	assert.ErrorAs(t, err, &xerrors.ErrActionFailed{}, "Should return error")
 	assert.ErrorContains(t, err, "Incorrect current password", "Should return error")
 
 	err = action.Logout(c)
@@ -234,7 +235,7 @@ func TestLogout(t *testing.T) {
 
 	// try to change password, should fail as we are logged out
 	err = action.ChangePassword(c, temporaryPassword, password)
-	assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+	assert.ErrorAs(t, err, &xerrors.ErrActionFailed{}, "Should return error")
 	assert.ErrorContains(t, err, "You are not logged in", "Should return error")
 
 	_, err = action.Login(c, username, temporaryPassword, "")
@@ -323,7 +324,7 @@ func Test2fa(t *testing.T) {
 		// verify 2fa, should fail as it's invalid
 		valid, err := action.VerifyToken(c, password, "wrongtoken")
 		assert.Error(t, err, "Should return error")
-		assert.ErrorAs(t, err, &action.ErrActionFailed{}, "Should return error")
+		assert.ErrorAs(t, err, &xerrors.ErrActionFailed{}, "Should return error")
 		assert.ErrorContains(t, err, "Invalid Token", "Should return error")
 		assert.False(t, valid, "Should not be valid")
 

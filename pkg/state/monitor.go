@@ -3,6 +3,7 @@ package state
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 // Monitor represents a monitor object.
@@ -106,14 +107,14 @@ func (m *Monitor) Validate() error {
 // Monitors returns all monitors received from Uptime Kuma.
 func (s *State) Monitors() (map[int]*Monitor, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.monitors == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	return s.monitors, nil
@@ -122,19 +123,19 @@ func (s *State) Monitors() (map[int]*Monitor, error) {
 // Monitor returns the monitor with the given id.
 func (s *State) Monitor(monitorId int) (*Monitor, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.monitors == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	monitor, ok := s.monitors[monitorId]
 	if !ok {
-		return nil, NewErrNotFound("monitor", monitorId)
+		return nil, xerrors.NewErrNotFound("monitor", monitorId)
 	}
 
 	return monitor, nil
@@ -143,7 +144,7 @@ func (s *State) Monitor(monitorId int) (*Monitor, error) {
 // SetMonitors sets the monitors received from Uptime Kuma.
 func (s *State) SetMonitors(monitors map[int]*Monitor) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
@@ -157,7 +158,7 @@ func (s *State) SetMonitors(monitors map[int]*Monitor) error {
 // SetMonitor sets the monitor with the given id.
 func (s *State) SetMonitor(id int, monitor *Monitor) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()

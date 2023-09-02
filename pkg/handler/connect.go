@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/Baiguoshuai1/shadiaosocketio"
-	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -40,7 +40,7 @@ func (c *Connect) Register(h HandlerRegistrator) error {
 // Occurred returns true if the event has occurred at least once.
 func (c *Connect) Occurred() bool {
 	_, err := c.state.Connected()
-	return !errors.Is(err, state.ErrNotSetYet)
+	return !errors.Is(err, xerrors.ErrNotSetYet)
 }
 
 // Callback handles the event.

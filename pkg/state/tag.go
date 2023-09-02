@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 // Tag represents a tag object.
@@ -22,14 +23,14 @@ func (t *Tag) Validate() error {
 // Tag returns the tag with the given id.
 func (s *State) Tag(tagId int) (*Tag, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.tags == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	tag, ok := s.tags[tagId]
@@ -43,14 +44,14 @@ func (s *State) Tag(tagId int) (*Tag, error) {
 // Tags returns the tags received from Uptime Kuma.
 func (s *State) Tags() ([]Tag, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.tags == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	// Convert map to slice.
@@ -65,7 +66,7 @@ func (s *State) Tags() ([]Tag, error) {
 // SetTags clears the current tags and sets the given tags.
 func (s *State) SetTags(tags []Tag) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
@@ -83,7 +84,7 @@ func (s *State) SetTags(tags []Tag) error {
 // SetTag sets the tag with the given id.
 func (s *State) SetTag(tag *Tag) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
@@ -105,14 +106,14 @@ func (s *State) SetTag(tag *Tag) error {
 // DeleteTag deletes the tag with the given id.
 func (s *State) DeleteTag(tagId int) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.tags == nil {
-		return ErrNotSetYet
+		return xerrors.ErrNotSetYet
 	}
 
 	delete(s.tags, tagId)

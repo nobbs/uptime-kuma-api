@@ -1,5 +1,7 @@
 package state
 
+import "github.com/nobbs/uptime-kuma-api/pkg/xerrors"
+
 // Info stores the information data received from Uptime Kuma.
 type Info struct {
 	LatestVersion        *string `mapstructure:"latestVersion"`
@@ -12,14 +14,14 @@ type Info struct {
 // Info return the info data received from Uptime Kuma.
 func (s *State) Info() (*Info, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.info == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	return s.info, nil
@@ -28,7 +30,7 @@ func (s *State) Info() (*Info, error) {
 // SetInfo sets the info data received from Uptime Kuma.
 func (s *State) SetInfo(info *Info) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()

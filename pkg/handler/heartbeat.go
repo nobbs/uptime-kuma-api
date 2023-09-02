@@ -7,6 +7,7 @@ import (
 	"github.com/Baiguoshuai1/shadiaosocketio"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -80,24 +81,24 @@ func (hn *ImportantHeartbeatList) Register(h HandlerRegistrator) error {
 
 func (hn *Heartbeat) Occurred() bool {
 	_, err := hn.state.Heartbeats(0)
-	return err == nil || !errors.Is(err, state.ErrNotSetYet)
+	return err == nil || !errors.Is(err, xerrors.ErrNotSetYet)
 }
 
 func (hn *HeartbeatList) Occurred() bool {
 	_, err := hn.state.Heartbeats(0)
-	return err == nil || !errors.Is(err, state.ErrNotSetYet)
+	return err == nil || !errors.Is(err, xerrors.ErrNotSetYet)
 }
 
 func (hn *ImportantHeartbeatList) Occurred() bool {
 	_, err := hn.state.ImportantHeartbeats(0)
-	return err == nil || !errors.Is(err, state.ErrNotSetYet)
+	return err == nil || !errors.Is(err, xerrors.ErrNotSetYet)
 }
 
 func (hn *Heartbeat) Callback(h *shadiaosocketio.Channel, data any) error {
 	// assert data type
 	typedData, ok := data.(map[string]any)
 	if !ok {
-		return NewErrInvalidDataType("map[string]any", data)
+		return xerrors.NewErrInvalidDataType("map[string]any", data)
 	}
 
 	// decode data into struct

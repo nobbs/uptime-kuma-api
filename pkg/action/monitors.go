@@ -5,6 +5,7 @@ import (
 
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	. "github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (

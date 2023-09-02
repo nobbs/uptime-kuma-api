@@ -2,6 +2,7 @@ package state
 
 import (
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -35,19 +36,19 @@ var _ HeartbeatQueue = (*utils.Queue[Heartbeat])(nil)
 // Heartbeats returns the heartbeats received from Uptime Kuma for the given monitor id.
 func (s *State) Heartbeats(monitorId int) ([]Heartbeat, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.heartbeats == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	beats, ok := s.heartbeats[monitorId]
 	if !ok {
-		return nil, NewErrNotFound("heartbeats", monitorId)
+		return nil, xerrors.NewErrNotFound("heartbeats", monitorId)
 	}
 
 	return beats.Slice(), nil
@@ -56,19 +57,19 @@ func (s *State) Heartbeats(monitorId int) ([]Heartbeat, error) {
 // ImportantHeartbeats returns the important heartbeats received from Uptime Kuma for the given monitor id.
 func (s *State) ImportantHeartbeats(monitorId int) ([]Heartbeat, error) {
 	if s == nil {
-		return nil, ErrStateNil
+		return nil, xerrors.ErrStateNil
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	if s.importantHeartbeats == nil {
-		return nil, ErrNotSetYet
+		return nil, xerrors.ErrNotSetYet
 	}
 
 	beats, ok := s.importantHeartbeats[monitorId]
 	if !ok {
-		return nil, NewErrNotFound("important heartbeats", monitorId)
+		return nil, xerrors.NewErrNotFound("important heartbeats", monitorId)
 	}
 
 	return beats.Slice(), nil
@@ -78,7 +79,7 @@ func (s *State) ImportantHeartbeats(monitorId int) ([]Heartbeat, error) {
 // overwriting existing heartbeats.
 func (s *State) SetHeartbeats(monitorId int, beats []Heartbeat, overwrite bool) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
@@ -119,7 +120,7 @@ func (s *State) SetHeartbeats(monitorId int, beats []Heartbeat, overwrite bool) 
 // overwriting existing heartbeats.
 func (s *State) SetImportantHeartbeats(monitorId int, beats []Heartbeat, overwrite bool) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()
@@ -158,7 +159,7 @@ func (s *State) SetImportantHeartbeats(monitorId int, beats []Heartbeat, overwri
 
 func (s *State) AppendHeartbeat(beat *Heartbeat) error {
 	if s == nil {
-		return ErrStateNil
+		return xerrors.ErrStateNil
 	}
 
 	s.mu.Lock()

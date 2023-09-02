@@ -8,6 +8,7 @@ import (
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -67,7 +68,7 @@ func TestHeartbeatList_Occurred(t *testing.T) {
 	s := mocks.NewHeartbeatListState(t)
 	c := handler.NewHeartbeatList(s)
 
-	s.EXPECT().Heartbeats(0).Return(nil, state.ErrNotSetYet).Once()
+	s.EXPECT().Heartbeats(0).Return(nil, xerrors.ErrNotSetYet).Once()
 	s.EXPECT().Heartbeats(0).Return([]state.Heartbeat{}, nil).Once()
 
 	assert.False(t, c.Occurred())
@@ -185,9 +186,9 @@ func TestHeartbeatList_Callback(t *testing.T) {
 				result:    []any{},
 				overwrite: false,
 			},
-			want: utils.NewString(state.ErrStateNil.Error()),
+			want: utils.NewString(xerrors.ErrStateNil.Error()),
 			on: func(f *fields) {
-				f.state.EXPECT().SetHeartbeats(0, []state.Heartbeat{}, false).Return(state.ErrStateNil).Once()
+				f.state.EXPECT().SetHeartbeats(0, []state.Heartbeat{}, false).Return(xerrors.ErrStateNil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
 				f.state.AssertExpectations(t)

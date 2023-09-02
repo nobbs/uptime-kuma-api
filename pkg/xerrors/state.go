@@ -1,4 +1,4 @@
-package state
+package xerrors
 
 import (
 	"errors"
@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	// ErrStateNil is returned when the state is nil, e.g. when the client is not
+	// xerrors.ErrStateNil is returned when the state is nil, e.g. when the client is not
 	// properly initialized.
 	ErrStateNil = errors.New("state is nil")
 
-	// ErrNotSetYet is returned when the value is not set yet - this may be the case
+	// xerrors.ErrNotSetYet is returned when the value is not set yet - this may be the case
 	// if the client has not yet received the event that sets the value.
 	ErrNotSetYet = errors.New("value not set yet")
 )

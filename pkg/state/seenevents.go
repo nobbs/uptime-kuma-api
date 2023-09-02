@@ -10,5 +10,9 @@ func (oe SeenEvents) HasSeen(event string) bool {
 
 // MarkSeen marks the given event as occurred.
 func (oe SeenEvents) MarkSeen(event string) {
+	if oe == nil {
+		return
+	}
+
 	oe[event] = struct{}{}
 }
