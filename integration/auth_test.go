@@ -10,7 +10,6 @@ import (
 
 	"github.com/nobbs/uptime-kuma-api/integration/testutil"
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
-	"github.com/nobbs/uptime-kuma-api/pkg/client"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
 	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
@@ -124,7 +123,7 @@ func TestAutoLogin(t *testing.T) {
 
 		// wait for auto login event to not happen
 		err = c.Await(handler.AutoLoginEvent, awaitTimeout)
-		assert.ErrorIs(t, err, client.ErrTimeout, "Auto login event should not happen")
+		assert.ErrorIs(t, err, xerrors.ErrTimeout, "Auto login event should not happen")
 	})
 
 	t.Run("Auto login enabled", func(t *testing.T) {

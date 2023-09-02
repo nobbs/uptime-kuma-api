@@ -9,17 +9,17 @@ import (
 )
 
 const (
-	loginAction          = "login"
-	loginByTokenAction   = "loginByToken"
-	logoutAction         = "logout"
-	changePasswordAction = "changePassword"
-	prepare2faAction     = "prepare2FA"
-	save2faAction        = "save2FA"
-	disable2faAction     = "disable2FA"
-	verifyTokenAction    = "verifyToken"
-	twoFAStatusAction    = "twoFAStatus"
-	needSetupAction      = "needSetup"
-	setupAction          = "setup"
+	LoginActionName          = "login"
+	LoginByTokenActionName   = "loginByToken"
+	LogoutActionName         = "logout"
+	ChangePasswordActionName = "changePassword"
+	Prepare2faActionName     = "prepare2FA"
+	Save2faActionName        = "save2FA"
+	Disable2faActionName     = "disable2FA"
+	VerifyTokenActionName    = "verifyToken"
+	TwoFAStatusActionName    = "twoFAStatus"
+	NeedSetupActionName      = "needSetup"
+	SetupActionName          = "setup"
 )
 
 // loginRequest is the request payload for the login action.
@@ -114,15 +114,15 @@ func Login(c StatefulEmiter, username, password, token string) (string, error) {
 		Token:    token,
 	}
 
-	response, err := c.Emit(loginAction, defaultEmitTimeout, request)
+	response, err := c.Emit(LoginActionName, defaultEmitTimeout, request)
 	if err != nil {
-		return "", NewErrActionFailed(loginAction, err.Error())
+		return "", NewErrActionFailed(LoginActionName, err.Error())
 	}
 
 	// unmarshal data
 	data := &loginResponse{}
 	if err := decode(response, data); err != nil {
-		return "", NewErrActionFailed(loginAction, err.Error())
+		return "", NewErrActionFailed(LoginActionName, err.Error())
 	}
 
 	// check if token is required
@@ -154,15 +154,15 @@ func LoginByToken(c StatefulEmiter, token string) error {
 	}
 
 	// send login by token request
-	response, err := c.Emit(loginByTokenAction, defaultEmitTimeout, token)
+	response, err := c.Emit(LoginByTokenActionName, defaultEmitTimeout, token)
 	if err != nil {
-		return NewErrActionFailed(loginByTokenAction, err.Error())
+		return NewErrActionFailed(LoginByTokenActionName, err.Error())
 	}
 
 	// decode response into struct
 	data := &loginResponse{}
 	if err := decode(response, data); err != nil {
-		return NewErrActionFailed(loginByTokenAction, err.Error())
+		return NewErrActionFailed(LoginByTokenActionName, err.Error())
 	}
 
 	// check if login was successful
@@ -186,8 +186,8 @@ func Logout(c StatefulEmiter) error {
 	}
 
 	// send logout request to server, ignore response
-	if _, err := c.Emit(logoutAction, defaultEmitTimeout); err != nil {
-		return fmt.Errorf("%s: %w", logoutAction, err)
+	if _, err := c.Emit(LogoutActionName, defaultEmitTimeout); err != nil {
+		return fmt.Errorf("%s: %w", LogoutActionName, err)
 	}
 
 	// set logged in to false
@@ -210,20 +210,20 @@ func ChangePassword(c StatefulEmiter, currentPassword, newPassword string) error
 	}
 
 	// call action
-	reseponse, err := c.Emit(changePasswordAction, defaultEmitTimeout, request)
+	reseponse, err := c.Emit(ChangePasswordActionName, defaultEmitTimeout, request)
 	if err != nil {
-		return NewErrActionFailed(changePasswordAction, err.Error())
+		return NewErrActionFailed(ChangePasswordActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &changePasswordResponse{}
 	if err := decode(reseponse, data); err != nil {
-		return NewErrActionFailed(changePasswordAction, err.Error())
+		return NewErrActionFailed(ChangePasswordActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return NewErrActionFailed(changePasswordAction, *data.Msg)
+		return NewErrActionFailed(ChangePasswordActionName, *data.Msg)
 	}
 
 	return nil
@@ -238,20 +238,20 @@ func Prepare2FA(c StatefulEmiter, currentPassword string) (string, error) {
 	}
 
 	// call action
-	response, err := c.Emit(prepare2faAction, defaultEmitTimeout, currentPassword)
+	response, err := c.Emit(Prepare2faActionName, defaultEmitTimeout, currentPassword)
 	if err != nil {
-		return "", NewErrActionFailed(prepare2faAction, err.Error())
+		return "", NewErrActionFailed(Prepare2faActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &prepare2faResponse{}
 	if err := decode(response, data); err != nil {
-		return "", NewErrActionFailed(prepare2faAction, err.Error())
+		return "", NewErrActionFailed(Prepare2faActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return "", NewErrActionFailed(prepare2faAction, *data.Msg)
+		return "", NewErrActionFailed(Prepare2faActionName, *data.Msg)
 	}
 
 	return *data.Uri, nil
@@ -266,20 +266,20 @@ func Save2FA(c StatefulEmiter, currentPassword string) error {
 	}
 
 	// call action
-	response, err := c.Emit(save2faAction, defaultEmitTimeout, currentPassword)
+	response, err := c.Emit(Save2faActionName, defaultEmitTimeout, currentPassword)
 	if err != nil {
-		return NewErrActionFailed(save2faAction, err.Error())
+		return NewErrActionFailed(Save2faActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &save2faResponse{}
 	if err := decode(response, data); err != nil {
-		return NewErrActionFailed(save2faAction, err.Error())
+		return NewErrActionFailed(Save2faActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return NewErrActionFailed(save2faAction, *data.Msg)
+		return NewErrActionFailed(Save2faActionName, *data.Msg)
 	}
 
 	return nil
@@ -293,20 +293,20 @@ func Disable2FA(c StatefulEmiter, currentPassword string) error {
 	}
 
 	// call action
-	response, err := c.Emit(disable2faAction, defaultEmitTimeout, currentPassword)
+	response, err := c.Emit(Disable2faActionName, defaultEmitTimeout, currentPassword)
 	if err != nil {
-		return NewErrActionFailed(disable2faAction, err.Error())
+		return NewErrActionFailed(Disable2faActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &disable2faResponse{}
 	if err := decode(response, data); err != nil {
-		return NewErrActionFailed(disable2faAction, err.Error())
+		return NewErrActionFailed(Disable2faActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return NewErrActionFailed(disable2faAction, *data.Msg)
+		return NewErrActionFailed(Disable2faActionName, *data.Msg)
 	}
 
 	return nil
@@ -320,20 +320,20 @@ func VerifyToken(c StatefulEmiter, currentPassword, token string) (bool, error) 
 	}
 
 	// call action
-	response, err := c.Emit(verifyTokenAction, defaultEmitTimeout, token, currentPassword)
+	response, err := c.Emit(VerifyTokenActionName, defaultEmitTimeout, token, currentPassword)
 	if err != nil {
-		return false, NewErrActionFailed(verifyTokenAction, err.Error())
+		return false, NewErrActionFailed(VerifyTokenActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &verifyTokenResponse{}
 	if err := decode(response, data); err != nil {
-		return false, NewErrActionFailed(verifyTokenAction, err.Error())
+		return false, NewErrActionFailed(VerifyTokenActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return false, NewErrActionFailed(verifyTokenAction, *data.Msg)
+		return false, NewErrActionFailed(VerifyTokenActionName, *data.Msg)
 	}
 
 	return *data.Valid, nil
@@ -347,20 +347,20 @@ func TwoFAStatus(c StatefulEmiter) (bool, error) {
 	}
 
 	// call action
-	response, err := c.Emit(twoFAStatusAction, defaultEmitTimeout)
+	response, err := c.Emit(TwoFAStatusActionName, defaultEmitTimeout)
 	if err != nil {
-		return false, NewErrActionFailed(twoFAStatusAction, err.Error())
+		return false, NewErrActionFailed(TwoFAStatusActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &twoFAStatusResponse{}
 	if err := decode(response, data); err != nil {
-		return false, NewErrActionFailed(twoFAStatusAction, err.Error())
+		return false, NewErrActionFailed(TwoFAStatusActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return false, NewErrActionFailed(twoFAStatusAction, *data.Msg)
+		return false, NewErrActionFailed(TwoFAStatusActionName, *data.Msg)
 	}
 
 	return *data.Status, nil
@@ -375,15 +375,15 @@ func NeedSetup(c StatefulEmiter) (bool, error) {
 	}
 
 	// call action
-	response, err := c.Emit(needSetupAction, defaultEmitTimeout)
+	response, err := c.Emit(NeedSetupActionName, defaultEmitTimeout)
 	if err != nil {
-		return false, NewErrActionFailed(needSetupAction, err.Error())
+		return false, NewErrActionFailed(NeedSetupActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := utils.NewBool(false)
 	if err := decode(response, data); err != nil {
-		return false, NewErrActionFailed(needSetupAction, err.Error())
+		return false, NewErrActionFailed(NeedSetupActionName, err.Error())
 	}
 
 	return *data, nil
@@ -398,20 +398,20 @@ func Setup(c StatefulEmiter, username, password string) error {
 	}
 
 	// call action
-	response, err := c.Emit(setupAction, defaultEmitTimeout, username, password)
+	response, err := c.Emit(SetupActionName, defaultEmitTimeout, username, password)
 	if err != nil {
-		return NewErrActionFailed(setupAction, err.Error())
+		return NewErrActionFailed(SetupActionName, err.Error())
 	}
 
 	// unmarshal raw response data
 	data := &setupResponse{}
 	if err := decode(response, data); err != nil {
-		return NewErrActionFailed(setupAction, err.Error())
+		return NewErrActionFailed(SetupActionName, err.Error())
 	}
 
 	// check if action was successful
 	if !data.Ok {
-		return NewErrActionFailed(setupAction, *data.Msg)
+		return NewErrActionFailed(SetupActionName, *data.Msg)
 	}
 
 	return nil

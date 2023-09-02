@@ -1,9 +1,12 @@
 package xerrors
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
+
+var ErrTimeout = errors.New("timeout occurred")
 
 type ErrInvalidDataType struct {
 	Expected string
