@@ -6,7 +6,7 @@ import (
 	"github.com/Baiguoshuai1/shadiaosocketio"
 	"github.com/nobbs/uptime-kuma-api/mocks"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
-	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -82,10 +82,10 @@ func TestAutoLogin_Callback(t *testing.T) {
 			args: &args{
 				ch: new(shadiaosocketio.Channel),
 			},
-			want: state.ErrStateNil,
+			want: xerrors.ErrStateNil,
 			on: func(f *fields) {
 				f.state.EXPECT().MarkSeen(handler.AutoLoginEvent).Return()
-				f.state.EXPECT().SetAutoLogin(true).Return(state.ErrStateNil).Once()
+				f.state.EXPECT().SetAutoLogin(true).Return(xerrors.ErrStateNil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
 				f.state.AssertExpectations(t)

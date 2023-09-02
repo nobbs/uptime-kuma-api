@@ -9,6 +9,7 @@ import (
 	"github.com/Baiguoshuai1/shadiaosocketio/websocket"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -152,7 +153,7 @@ func (c *Client) Await(event string, timeout time.Duration) error {
 	case <-eventChannel:
 		return nil
 	case <-ctx.Done():
-		return ErrTimeout
+		return xerrors.ErrTimeout
 	}
 }
 

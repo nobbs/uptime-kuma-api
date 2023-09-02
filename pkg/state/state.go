@@ -50,7 +50,7 @@ func NewState() *State {
 		monitors:            nil,
 		heartbeats:          nil,
 		importantHeartbeats: nil,
-		tags:                nil,
+		tags:                map[int]*Tag{},
 	}
 }
 

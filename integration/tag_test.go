@@ -3,12 +3,12 @@
 package integration_test
 
 import (
-	"reflect"
 	"testing"
 
+	"github.com/nobbs/uptime-kuma-api/integration/testutil"
 	"github.com/nobbs/uptime-kuma-api/pkg/action"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
-	"github.com/nobbs/uptime-kuma-api/testutil"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTags(t *testing.T) {
@@ -21,144 +21,113 @@ func TestTags(t *testing.T) {
 
 	// create new uptime-kuma server
 	server, err := testutil.NewUptimeKumaServerWithUserSetup(username, password)
-	if err != nil {
-		panic(err)
-	}
-
+	assert.NoError(t, err, "Should not return error")
 	t.Cleanup(server.Teardown)
 
 	wantTags := []state.Tag{
 		{
-			Id:    1,
 			Name:  "Test tag",
 			Color: "#ff0000",
 		},
 		{
-			Id:    2,
 			Name:  "Test tag 2",
 			Color: "#00ff00",
 		},
 	}
-	modifiedTag := state.Tag{
+
+	editTag := state.Tag{
 		Id:    1,
 		Name:  "Test tag modified",
 		Color: "#0000ff",
 	}
 
 	c, err := server.NewClientWithLoginByUsernameAndPassword()
-	if err != nil {
-		t.Fatalf("Failed to create new client: %s", err)
-	}
+	assert.NoError(t, err, "Should not return error")
+
 	defer c.Close()
 
 	t.Run("Get tags, should be empty", func(t *testing.T) {
-		// get tags
 		tags, err := action.GetTags(c)
-		if err != nil {
-			t.Fatalf("Failed to get tags: %s", err)
-		}
-
-		// check if tags is empty
-		if len(tags) != 0 {
-			t.Fatalf("Expected no tags, got %d", len(tags))
-		}
+		assert.NoError(t, err, "Should not return error")
+		assert.Empty(t, tags, "Should be empty")
 	})
 
-	t.Run("Add first tag", func(t *testing.T) {
-		// add tag
-		tag, err := action.AddTag(c, wantTags[0].Name, wantTags[0].Color)
-		if err != nil {
-			t.Fatalf("Failed to add tag: %s", err)
-		}
+	t.Run("Add one tag, check and delete", func(t *testing.T) {
+		want := wantTags[0]
 
-		switch {
-		case tag == nil:
-			t.Fatalf("Expected tag, got none")
-		case !reflect.DeepEqual(tag, &wantTags[0]):
-			t.Fatalf("Expected tag to be '%v', got '%v'", &wantTags[0], tag)
-		}
+		got, err := action.AddTag(c, want.Name, want.Color)
+		assert.NoError(t, err, "Should not return error")
+		assert.NotNil(t, got, "Should not be nil")
+		assert.Equal(t, want.Name, got.Name, "Should have same name")
+		assert.Equal(t, want.Color, got.Color, "Should have same color")
+
+		gotTags, err := action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Len(t, gotTags, 1, "Should have one tag")
+		assert.Equal(t, want.Name, gotTags[0].Name, "Should have same name")
+		assert.Equal(t, want.Color, gotTags[0].Color, "Should have same color")
+
+		err = action.DeleteTag(c, got.Id)
+		assert.NoError(t, err, "Should not return error")
+
+		gotTags, err = action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Empty(t, gotTags, "Should be empty")
 	})
 
-	t.Run("Get list of tags, should be 1", func(t *testing.T) {
-		// get tags
-		tags, err := action.GetTags(c)
-		if err != nil {
-			t.Fatalf("Failed to get tags: %s", err)
+	t.Run("Add two tags, check and delete", func(t *testing.T) {
+		for i := range wantTags {
+			want := wantTags[i]
+
+			got, err := action.AddTag(c, want.Name, want.Color)
+			assert.NoError(t, err, "Should not return error")
+			assert.NotNil(t, got, "Should not be nil")
+			assert.Equal(t, want.Name, got.Name, "Should have same name")
+			assert.Equal(t, want.Color, got.Color, "Should have same color")
 		}
 
-		switch {
-		case len(tags) != 1:
-			t.Fatalf("Expected 1 tag, got %d", len(tags))
-		case !reflect.DeepEqual(tags, wantTags[:1]):
-			t.Fatalf("Expected tags to be '%v', got '%v'", wantTags[:1], tags)
+		gotTags, err := action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Equal(t, len(wantTags), len(gotTags), "Should have same length")
+
+		for i := range gotTags {
+			assert.Equal(t, wantTags[i].Name, gotTags[i].Name, "Should have same name")
+			assert.Equal(t, wantTags[i].Color, gotTags[i].Color, "Should have same color")
 		}
+
+		for _, got := range gotTags {
+			err = action.DeleteTag(c, got.Id)
+			assert.NoError(t, err, "Should not return error")
+		}
+
+		gotTags, err = action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Empty(t, gotTags, "Should be empty")
 	})
 
-	t.Run("Add second tag", func(t *testing.T) {
-		// add tag
-		tag, err := action.AddTag(c, wantTags[1].Name, wantTags[1].Color)
-		if err != nil {
-			t.Fatalf("Failed to add tag: %s", err)
-		}
+	t.Run("Add and edit tag", func(t *testing.T) {
+		want := wantTags[0]
 
-		switch {
-		case tag == nil:
-			t.Fatalf("Expected tag, got none")
-		case !reflect.DeepEqual(tag, &wantTags[1]):
-			t.Fatalf("Expected tag to be '%v', got '%v'", &wantTags[1], tag)
-		}
-	})
+		got, err := action.AddTag(c, want.Name, want.Color)
+		assert.NoError(t, err, "Should not return error")
 
-	t.Run("Get list of tags, should be 2", func(t *testing.T) {
-		// get tags
-		tags, err := action.GetTags(c)
-		if err != nil {
-			t.Fatalf("Failed to get tags: %s", err)
-		}
+		tag, err := action.EditTag(c, got.Id, editTag.Name, editTag.Color)
+		assert.NoError(t, err, "Should not return error")
+		assert.NotNil(t, tag, "Should not be nil")
+		assert.Equal(t, editTag.Name, tag.Name, "Should have same name")
+		assert.Equal(t, editTag.Color, tag.Color, "Should have same color")
 
-		switch {
-		case len(tags) != 2:
-			t.Fatalf("Expected 2 tags, got %d", len(tags))
-		case !reflect.DeepEqual(tags, wantTags):
-			t.Fatalf("Expected tags to be '%v', got '%v'", wantTags, tags)
-		}
-	})
+		gotTags, err := action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Len(t, gotTags, 1, "Should have one tag")
+		assert.Equal(t, editTag.Name, gotTags[0].Name, "Should have same name")
+		assert.Equal(t, editTag.Color, gotTags[0].Color, "Should have same color")
 
-	t.Run("Edit first tag", func(t *testing.T) {
-		// edit tag
-		tag, err := action.EditTag(c, modifiedTag.Id, modifiedTag.Name, modifiedTag.Color)
-		if err != nil {
-			t.Fatalf("Failed to edit tag: %s", err)
-		}
+		err = action.DeleteTag(c, got.Id)
+		assert.NoError(t, err, "Should not return error")
 
-		switch {
-		case tag == nil:
-			t.Fatalf("Expected tag, got none")
-		case !reflect.DeepEqual(tag, &modifiedTag):
-			t.Fatalf("Expected tag to be '%v', got '%v'", &modifiedTag, tag)
-		}
-	})
-
-	t.Run("Delete first tag", func(t *testing.T) {
-		// delete tag
-		err := action.DeleteTag(c, wantTags[0].Id)
-		if err != nil {
-			t.Fatalf("Failed to delete tag: %s", err)
-		}
-	})
-
-	t.Run("Get list of tags, should be 1", func(t *testing.T) {
-		// get tags
-		tags, err := action.GetTags(c)
-		if err != nil {
-			t.Fatalf("Failed to get tags: %s", err)
-		}
-
-		switch {
-		case len(tags) != 1:
-			t.Fatalf("Expected 1 tag, got %d", len(tags))
-		case !reflect.DeepEqual(tags, wantTags[1:]):
-			t.Fatalf("Expected tags to be '%v', got '%v'", wantTags[1:], tags)
-		}
+		gotTags, err = action.GetTags(c)
+		assert.NoError(t, err, "Should not return error")
+		assert.Empty(t, gotTags, "Should be empty")
 	})
 }

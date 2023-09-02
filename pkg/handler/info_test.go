@@ -8,6 +8,7 @@ import (
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
 	"github.com/nobbs/uptime-kuma-api/pkg/utils"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -33,7 +34,7 @@ func TestInfo_Occurred(t *testing.T) {
 	s := mocks.NewInfoState(t)
 	c := handler.NewInfo(s)
 
-	s.EXPECT().Info().Return(nil, state.ErrNotSetYet).Once()
+	s.EXPECT().Info().Return(nil, xerrors.ErrNotSetYet).Once()
 	s.EXPECT().Info().Return(&state.Info{}, nil).Once()
 
 	assert.False(t, c.Occurred())
@@ -112,9 +113,9 @@ func TestInfo_Callback(t *testing.T) {
 				ch:   &shadiaosocketio.Channel{},
 				data: map[string]any{},
 			},
-			want: utils.NewString(state.ErrStateNil.Error()),
+			want: utils.NewString(xerrors.ErrStateNil.Error()),
 			on: func(f *fields) {
-				f.state.EXPECT().SetInfo(&state.Info{}).Return(state.ErrStateNil).Once()
+				f.state.EXPECT().SetInfo(&state.Info{}).Return(xerrors.ErrStateNil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
 				f.state.AssertExpectations(t)

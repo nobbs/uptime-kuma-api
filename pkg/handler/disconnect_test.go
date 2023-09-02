@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/nobbs/uptime-kuma-api/mocks"
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
-	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	"github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -96,9 +96,9 @@ func TestDisconnect_Callback(t *testing.T) {
 				ch:     new(shadiaosocketio.Channel),
 				reason: websocket.CloseError{},
 			},
-			want: state.ErrStateNil,
+			want: xerrors.ErrStateNil,
 			on: func(f *fields) {
-				f.state.EXPECT().SetConnected(false).Return(state.ErrStateNil).Once()
+				f.state.EXPECT().SetConnected(false).Return(xerrors.ErrStateNil).Once()
 			},
 			assert: func(t *testing.T, f *fields) {
 				f.state.AssertExpectations(t)

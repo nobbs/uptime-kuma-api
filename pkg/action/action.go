@@ -6,6 +6,7 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/nobbs/uptime-kuma-api/pkg/state"
+	. "github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (

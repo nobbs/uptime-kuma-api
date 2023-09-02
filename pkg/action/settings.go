@@ -2,6 +2,7 @@ package action
 
 import (
 	"github.com/nobbs/uptime-kuma-api/pkg/handler"
+	. "github.com/nobbs/uptime-kuma-api/pkg/xerrors"
 )
 
 const (
@@ -11,18 +12,18 @@ const (
 
 // Settings represents the settings of the Uptime Kuma instance.
 type Settings struct {
-	CheckUpdate         *bool   `mapstructure:"checkUpdate" json:"checkUpdate,omitempty"`
-	CheckBeta           *bool   `mapstructure:"checkBeta" json:"checkBeta,omitempty"`
-	KeepDataPeriodDays  *int    `mapstructure:"keepDataPeriodDays" json:"keepDataPeriodDays,omitempty"`
-	ServerTimezone      *string `mapstructure:"serverTimezone" json:"serverTimezone,omitempty"`
-	EntryPage           *string `mapstructure:"entryPage" json:"entryPage,omitempty"`
-	SearchEngineIndex   *bool   `mapstructure:"searchEngineIndex" json:"searchEngineIndex,omitempty"`
-	PrimaryBaseURL      *string `mapstructure:"primaryBaseURL" json:"primaryBaseURL,omitempty"`
-	SteamAPIKey         *string `mapstructure:"steamAPIKey" json:"steamAPIKey,omitempty"`
-	DnsCache            *bool   `mapstructure:"dnsCache" json:"dnsCache,omitempty"`
-	TlsExpiryNotifyDays []int   `mapstructure:"tlsExpiryNotifyDays" json:"tlsExpiryNotifyDays,omitempty"`
-	DisableAuth         *bool   `mapstructure:"disableAuth" json:"disableAuth,omitempty"`
-	TrustProxy          *bool   `mapstructure:"trustProxy" json:"trustProxy,omitempty"`
+	CheckUpdate         *bool   `json:"checkUpdate,omitempty"         mapstructure:"checkUpdate"`
+	CheckBeta           *bool   `json:"checkBeta,omitempty"           mapstructure:"checkBeta"`
+	KeepDataPeriodDays  *int    `json:"keepDataPeriodDays,omitempty"  mapstructure:"keepDataPeriodDays"`
+	ServerTimezone      *string `json:"serverTimezone,omitempty"      mapstructure:"serverTimezone"`
+	EntryPage           *string `json:"entryPage,omitempty"           mapstructure:"entryPage"`
+	SearchEngineIndex   *bool   `json:"searchEngineIndex,omitempty"   mapstructure:"searchEngineIndex"`
+	PrimaryBaseURL      *string `json:"primaryBaseURL,omitempty"      mapstructure:"primaryBaseURL"`
+	SteamAPIKey         *string `json:"steamAPIKey,omitempty"         mapstructure:"steamAPIKey"`
+	DnsCache            *bool   `json:"dnsCache,omitempty"            mapstructure:"dnsCache"`
+	TlsExpiryNotifyDays []int   `json:"tlsExpiryNotifyDays,omitempty" mapstructure:"tlsExpiryNotifyDays"`
+	DisableAuth         *bool   `json:"disableAuth,omitempty"         mapstructure:"disableAuth"`
+	TrustProxy          *bool   `json:"trustProxy,omitempty"          mapstructure:"trustProxy"`
 
 	Unmapped map[string]any `mapstructure:",remain"`
 }
